@@ -1,0 +1,5 @@
+/home/duy-ubuntu/linux/build/CMakeFiles/edit_cache.dir
+/home/duy-ubuntu/linux/build/CMakeFiles/rebuild_cache.dir
+/home/duy-ubuntu/linux/build/src/CMakeFiles/chat_app.dir
+/home/duy-ubuntu/linux/build/src/CMakeFiles/edit_cache.dir
+/home/duy-ubuntu/linux/build/src/CMakeFiles/rebuild_cache.dir

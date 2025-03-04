@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "database_connector.h": "c",
+        "cmd.h": "c"
+    }
+}

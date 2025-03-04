@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/chat_app.dir/main.c.o CMakeFiles/chat_app.dir/database/database_connector.c.o -o chat_app  /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libmysqlclient.so -lpthread 
