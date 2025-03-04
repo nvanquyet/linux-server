@@ -2,6 +2,14 @@
     "files.associations": {
         "stdio.h": "c",
         "database_connector.h": "c",
-        "cmd.h": "c"
-    }
+        "cmd.h": "c",
+        "bit": "cpp",
+        "compare": "cpp",
+        "type_traits": "cpp",
+        "cmath": "cpp",
+        "limits": "cpp",
+        "new": "cpp",
+        "utility": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

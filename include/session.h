@@ -2,10 +2,8 @@
 #define ISESSION_H
 
 #include <stdbool.h>
+#include "message.h"
 
-struct IMessageHandler;
-struct Service;
-struct Message;
 
 typedef struct {
     bool (*isConnected)(void *self);
