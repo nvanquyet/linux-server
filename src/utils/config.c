@@ -4,7 +4,7 @@
 #include "config.h"
 #include "log.h"
 
-// Singleton instance
+
 static Config* instance = NULL;
 
 Config* config_get_instance() {
@@ -15,8 +15,9 @@ Config* config_get_instance() {
 }
 
 bool config_load() {
-    FILE* config_file = fopen("config.properties", "r");
+    FILE* config_file = fopen("../config.properties", "r");
     if (config_file == NULL) {
+        log_message(ERROR, "Failed to load config file");
         return false;
     }
     
@@ -27,31 +28,31 @@ bool config_load() {
     char value[128];
     
     while (fgets(line, sizeof(line), config_file)) {
-        // Skip comments and empty lines
+        
         if (line[0] == '#' || line[0] == '\n') {
             continue;
         }
         
-        // Parse key=value
+        
         char* delimiter = strchr(line, '=');
         if (delimiter == NULL) continue;
         
-        // Split key and value
+        
         *delimiter = '\0';
         strncpy(key, line, sizeof(key));
         strncpy(value, delimiter + 1, sizeof(value));
         
-        // Remove trailing newline from value
+        
         char* newline = strchr(value, '\n');
         if (newline) *newline = '\0';
         
-        // Trim key and value
+        
         char* k = key;
         char* v = value;
         while (*k == ' ') k++;
         while (*v == ' ') v++;
         
-        // Set config values based on key
+        
         if (strcmp(k, "server.log.display") == 0) {
             config->show_log = (strcmp(v, "true") == 0);
         } else if (strcmp(k, "server.port") == 0) {
@@ -70,6 +71,9 @@ bool config_load() {
             config->db_name = strdup(v);
         }
     }
+
+    log_message(INFO, "Config loaded: show_log=%d, port=%d, ip_address_limit=%d, db_host=%s, db_port=%d, db_user=%s, db_password=%s, db_name=%s",
+                config->show_log, config->port, config->ip_address_limit, config->db_host, config->db_port, config->db_user, config->db_password, config->db_name);
     
     fclose(config_file);
     return true;

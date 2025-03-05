@@ -6,12 +6,6 @@
 #include "config.h"
 
 void log_message(LogLevel level, const char* format, ...) {
-    
-    if (!config_get_show_log() && level != ERROR && level != FATAL) {
-        return;
-    }
-    
-    
     time_t current_time;
     struct tm* time_info;
     char time_string[20];

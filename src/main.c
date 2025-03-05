@@ -36,7 +36,6 @@ int main(int argc, char* argv[]) {
             
             pthread_detach(server_thread);
         
-            
         } else {
             char error_msg[100];
             snprintf(error_msg, sizeof(error_msg), "Port %d da duoc su dung!", config_get_port());
