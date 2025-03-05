@@ -3,7 +3,9 @@
 
 src/CMakeFiles/chat_app.dir/database/database_connector.c.o
  /home/duy-ubuntu/linux/src/database/database_connector.c
+ /home/duy-ubuntu/linux/include/config.h
  /home/duy-ubuntu/linux/include/database_connector.h
+ /home/duy-ubuntu/linux/include/log.h
  /usr/include/alloca.h
  /usr/include/endian.h
  /usr/include/features-time64.h
@@ -96,8 +98,11 @@ src/CMakeFiles/chat_app.dir/database/database_connector.c.o
 
 src/CMakeFiles/chat_app.dir/main.c.o
  /home/duy-ubuntu/linux/src/main.c
- /home/duy-ubuntu/linux/include/CMD.h
+ /home/duy-ubuntu/linux/include/config.h
  /home/duy-ubuntu/linux/include/database_connector.h
+ /home/duy-ubuntu/linux/include/log.h
+ /home/duy-ubuntu/linux/include/server.h
+ /home/duy-ubuntu/linux/include/utils.h
  /usr/include/alloca.h
  /usr/include/endian.h
  /usr/include/features-time64.h

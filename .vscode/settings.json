@@ -9,7 +9,10 @@
         "cmath": "cpp",
         "limits": "cpp",
         "new": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "config.h": "c",
+        "sql_statement.h": "c",
+        "server.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

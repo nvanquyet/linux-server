@@ -1,13 +1,65 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <pthread.h>
+#include <unistd.h>
+#include "config.h"
 #include "database_connector.h"
-#include "CMD.h"
+#include "config.h"
+#include "server.h"
+#include "log.h"
+#include "utils.h"
 
-int main() {
-    DbManager db;
-    if (!db_init(&db, "172.17.0.2", "root", "12332145", "linux")) return 1;
 
-    db_execute(&db, "INSERT INTO test(name) VALUES('John')");
+static bool is_stop = false;
 
-    db_close(&db);
-    return 0;
+
+void* server_start_thread(void* arg) {
+    server_start();
+    return NULL;
+}
+
+int main(int argc, char* argv[]) {
+    
+    if (config_load()) {
+        
+        if (!db_manager_start()) {
+            return EXIT_FAILURE;
+        }
+        
+        
+        if (is_port_available(config_get_port())) {
+            pthread_t server_thread;
+            if (pthread_create(&server_thread, NULL, server_start_thread, NULL) != 0) {
+                log_message(ERROR, "Failed to create server thread");
+                return EXIT_FAILURE;
+            }
+            
+            pthread_detach(server_thread);
+        
+            
+        } else {
+            char error_msg[100];
+            snprintf(error_msg, sizeof(error_msg), "Port %d da duoc su dung!", config_get_port());
+            log_message(ERROR, error_msg);
+            return EXIT_FAILURE;
+        }
+    } else {
+        log_message(ERROR, "Failed to load config");
+        return EXIT_FAILURE;
+    }
+    
+    
+    
+    while (!is_stop) {
+        
+        sleep(1);
+    }
+    
+    return EXIT_SUCCESS;
+}
+
+
+void server_stop() {
+    is_stop = true;
 }

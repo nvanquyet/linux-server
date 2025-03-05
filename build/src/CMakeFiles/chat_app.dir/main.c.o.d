@@ -22,20 +22,15 @@ src/CMakeFiles/chat_app.dir/main.c.o: /home/duy-ubuntu/linux/src/main.c \
  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
- /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
- /home/duy-ubuntu/linux/include/database_connector.h \
- /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h \
- /usr/include/mysql/mysql.h \
- /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h /usr/include/stdint.h \
- /usr/include/x86_64-linux-gnu/bits/wchar.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
+ /usr/include/x86_64-linux-gnu/bits/floatn-common.h /usr/include/stdlib.h \
+ /usr/include/x86_64-linux-gnu/bits/waitflags.h \
+ /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
  /usr/include/x86_64-linux-gnu/sys/types.h \
  /usr/include/x86_64-linux-gnu/bits/types/clock_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
- /usr/include/x86_64-linux-gnu/bits/types/timer_t.h /usr/include/endian.h \
+ /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-intn.h /usr/include/endian.h \
  /usr/include/x86_64-linux-gnu/bits/endian.h \
  /usr/include/x86_64-linux-gnu/bits/endianness.h \
  /usr/include/x86_64-linux-gnu/bits/byteswap.h \
@@ -51,18 +46,10 @@ src/CMakeFiles/chat_app.dir/main.c.o: /home/duy-ubuntu/linux/src/main.c \
  /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
  /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
- /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
- /usr/include/mysql/field_types.h /usr/include/mysql/my_list.h \
- /usr/include/mysql/mysql_com.h /usr/include/mysql/my_command.h \
- /usr/include/mysql/my_compress.h \
- /usr/include/mysql/udf_registration_types.h \
- /usr/include/mysql/client_plugin.h /usr/include/stdlib.h \
- /usr/include/x86_64-linux-gnu/bits/waitflags.h \
- /usr/include/x86_64-linux-gnu/bits/waitstatus.h /usr/include/alloca.h \
+ /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
- /usr/include/mysql/plugin_auth_common.h \
- /usr/include/mysql/mysql_version.h /usr/include/mysql/mysql_time.h \
- /usr/include/mysql/errmsg.h /usr/include/pthread.h /usr/include/sched.h \
+ /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h \
+ /usr/include/pthread.h /usr/include/sched.h \
  /usr/include/x86_64-linux-gnu/bits/sched.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
  /usr/include/x86_64-linux-gnu/bits/cpu-set.h /usr/include/time.h \
@@ -75,4 +62,26 @@ src/CMakeFiles/chat_app.dir/main.c.o: /home/duy-ubuntu/linux/src/main.c \
  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min.h \
- /home/duy-ubuntu/linux/include/CMD.h
+ /usr/include/unistd.h /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/include/x86_64-linux-gnu/bits/environments.h \
+ /usr/include/x86_64-linux-gnu/bits/confname.h \
+ /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
+ /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
+ /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
+ /home/duy-ubuntu/linux/include/config.h \
+ /home/duy-ubuntu/linux/include/database_connector.h \
+ /usr/include/mysql/mysql.h \
+ /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
+ /usr/include/mysql/field_types.h /usr/include/mysql/my_list.h \
+ /usr/include/mysql/mysql_com.h /usr/include/mysql/my_command.h \
+ /usr/include/mysql/my_compress.h \
+ /usr/include/mysql/udf_registration_types.h \
+ /usr/include/mysql/client_plugin.h \
+ /usr/include/mysql/plugin_auth_common.h \
+ /usr/include/mysql/mysql_version.h /usr/include/mysql/mysql_time.h \
+ /usr/include/mysql/errmsg.h /home/duy-ubuntu/linux/include/server.h \
+ /home/duy-ubuntu/linux/include/log.h \
+ /home/duy-ubuntu/linux/include/utils.h
