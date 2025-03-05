@@ -1,8 +1,10 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-void server_start();
+#include <stdbool.h>
 
+void server_start();
+bool server_init();
 void server_stop();
 
 #endif

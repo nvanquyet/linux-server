@@ -12,7 +12,9 @@
         "utility": "cpp",
         "config.h": "c",
         "sql_statement.h": "c",
-        "server.h": "c"
+        "server.h": "c",
+        "stdbool.h": "c",
+        "log.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

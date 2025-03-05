@@ -20,7 +20,6 @@ void* server_start_thread(void* arg) {
 }
 
 int main(int argc, char* argv[]) {
-    
     if (config_load()) {
         
         if (!db_manager_start()) {
@@ -59,7 +58,3 @@ int main(int argc, char* argv[]) {
     return EXIT_SUCCESS;
 }
 
-
-void server_stop() {
-    is_stop = true;
-}
