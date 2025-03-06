@@ -16,8 +16,8 @@ struct Controller {
     void (*onConnectionFail)(Controller* self);
     void (*onDisconnected)(Controller* self);
     void (*onConnectOK)(Controller* self);
-    void (*messageInGame)(Controller* self, Message* ms);
-    void (*messageNotInGame)(Controller* self, Message* ms);
+    void (*messageInChat)(Controller* self, Message* ms);
+    void (*messageNotInChat)(Controller* self, Message* ms);
     void (*newMessage)(Controller* self, Message* ms);
     
     Session* client;

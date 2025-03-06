@@ -34,3 +34,7 @@ bool is_port_available(int port) {
     close(sock);
     return true;
 }
+
+int utils_next_int(int max) {
+    return rand() % max;
+}

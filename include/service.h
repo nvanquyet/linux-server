@@ -10,8 +10,10 @@ struct Service {
     Session* session;
 };
 
-Service* createService();
+Service* createService(Session* session);
 void destroyService(Service* service);
 void service_set_session(Service* service, Session* session);
+void service_login_success(Service* service);
+
 
 #endif

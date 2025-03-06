@@ -21,6 +21,7 @@ struct User{
     void (*login) (User* self);
     void (*logout) (User* self);
     void (*userRegister) (User* self);
+    bool (*isCleaned) (User* self);
 
 };
 
