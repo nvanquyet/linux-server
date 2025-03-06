@@ -12,8 +12,6 @@
 
 
 static bool is_stop = false;
-
-
 void* server_start_thread(void* arg) {
     server_start();
     return NULL;

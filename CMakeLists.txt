@@ -14,14 +14,33 @@ option(BUILD_DEBUG "Build with debug symbols" OFF)
 
 # Thư viện bắt buộc
 find_package(OpenSSL REQUIRED)
-find_package(MySQL)
+
+# Improved MySQL detection
+# Try using pkg-config first (more reliable on many systems)
+find_package(PkgConfig QUIET)
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(MYSQL QUIET mysqlclient)
+endif()
+
+# If pkg-config failed, try the manual approach
 if(NOT MYSQL_FOUND)
-    # Thử với cách khác
-    find_library(MYSQL_LIBRARIES 
-        NAMES mysqlclient
-        PATHS /usr/lib /usr/local/lib
+    # Try to find MySQL using find_path and find_library
+    find_path(MYSQL_INCLUDE_DIR
+        NAMES mysql.h
+        PATHS /usr/include/mysql /usr/local/include/mysql /usr/mysql/include/mysql
     )
-    include_directories(/usr/include/mysql)
+    
+    find_library(MYSQL_LIBRARIES
+        NAMES mysqlclient
+        PATHS /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /usr/mysql/lib
+    )
+    
+    if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
+        set(MYSQL_FOUND TRUE)
+        message(STATUS "Found MySQL: ${MYSQL_LIBRARIES}, ${MYSQL_INCLUDE_DIR}")
+    else()
+        message(FATAL_ERROR "MySQL library not found. Please install MySQL development package.")
+    endif()
 endif()
 
 # Thêm thư mục include
