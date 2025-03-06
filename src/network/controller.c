@@ -16,7 +16,9 @@ Controller* createController(Session* client){
     return controller;
 }
 void destroyController(Controller* controller){
-
+    if(controller != NULL){
+        free(controller);
+    }
 }
 void controller_set_service(Controller* controller, Service* service){
     if(controller != NULL){
