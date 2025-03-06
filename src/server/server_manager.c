@@ -112,6 +112,7 @@ void server_manager_add_ip(const char *ip) {
     if (server_manager.ip_count < MAX_USERS) {
         server_manager.ips[server_manager.ip_count++] = strdup(ip);
     }
+
     pthread_rwlock_unlock(&server_manager.lock_session);
 }
 

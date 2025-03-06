@@ -57,7 +57,7 @@ bool config_load() {
             config->show_log = (strcmp(v, "true") == 0);
         } else if (strcmp(k, "server.port") == 0) {
             config->port = atoi(v);
-        } else if (strcmp(k, "game.login.limit") == 0) {
+        } else if (strcmp(k, "login.limit") == 0) {
             config->ip_address_limit = atoi(v);
         } else if (strcmp(k, "db.host") == 0) {
             config->db_host = strdup(v);

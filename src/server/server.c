@@ -102,7 +102,7 @@ void server_start() {
         int connection_count = server_manager_frequency(client_ip);
         log_message(INFO, "IP: %s number: %d", client_ip, connection_count);
         
-        if (connection_count >= config_get_ip_address_limit(config)) {
+        if (connection_count >= config_get_ip_address_limit()) {
             close(client_socket);
             continue;
         }
