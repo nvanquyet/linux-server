@@ -19,13 +19,17 @@ void* server_start_thread(void* arg) {
 
 int main(int argc, char* argv[]) {
     if (config_load()) {
-        
         if (!db_manager_start()) {
             return EXIT_FAILURE;
         }
         
         
         if (is_port_available(config_get_port())) {
+            if(!server_init()) {
+                log_message(ERROR, "Failed to initialize server");
+                return EXIT_FAILURE;
+            }
+
             pthread_t server_thread;
             if (pthread_create(&server_thread, NULL, server_start_thread, NULL) != 0) {
                 log_message(ERROR, "Failed to create server thread");

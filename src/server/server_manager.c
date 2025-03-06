@@ -38,21 +38,21 @@ void destroy_server_manager() {
     pthread_rwlock_destroy(&server_manager.lock_session);
 }
 
-void get_users(User *buffer[], int *count) {
+void server_manager_get_users(User *buffer[], int *count) {
     pthread_rwlock_rdlock(&server_manager.lock_user);
     *count = server_manager.user_count;
     memcpy(buffer, server_manager.users, sizeof(User*) * server_manager.user_count);
     pthread_rwlock_unlock(&server_manager.lock_user);
 }
 
-int get_number_online() {
+int server_manager_get_number_online() {
     pthread_rwlock_rdlock(&server_manager.lock_user);
     int count = server_manager.user_count;
     pthread_rwlock_unlock(&server_manager.lock_user);
     return count;
 }
 
-int frequency(const char *ip) {
+int server_manager_frequency(const char *ip) {
     int count = 0;
     pthread_rwlock_rdlock(&server_manager.lock_session);
     for (int i = 0; i < server_manager.ip_count; i++) {
@@ -64,7 +64,7 @@ int frequency(const char *ip) {
     return count;
 }
 
-User *find_user_by_id(int id) {
+User *server_manager_find_user_by_id(int id) {
     pthread_rwlock_rdlock(&server_manager.lock_user);
     for (int i = 0; i < server_manager.user_count; i++) {
         if (server_manager.users[i]->id == id) {
@@ -76,7 +76,7 @@ User *find_user_by_id(int id) {
     return NULL;
 }
 
-User *find_user_by_username(const char *username) {
+User *server_manager_find_user_by_username(const char *username) {
     pthread_rwlock_rdlock(&server_manager.lock_user);
     for (int i = 0; i < server_manager.user_count; i++) {
         if (strcmp(server_manager.users[i]->username, username) == 0) {
@@ -88,7 +88,7 @@ User *find_user_by_username(const char *username) {
     return NULL;
 }
 
-void add_user(User *user) {
+void server_manager_add_user(User *user) {
     pthread_rwlock_wrlock(&server_manager.lock_user);
     if (server_manager.user_count < MAX_USERS) {
         server_manager.users[server_manager.user_count++] = user;
@@ -96,7 +96,7 @@ void add_user(User *user) {
     pthread_rwlock_unlock(&server_manager.lock_user);
 }
 
-void remove_user(User *user) {
+void server_manager_remove_user(User *user) {
     pthread_rwlock_wrlock(&server_manager.lock_user);
     for (int i = 0; i < server_manager.user_count; i++) {
         if (server_manager.users[i]->id == user->id) {
@@ -107,7 +107,7 @@ void remove_user(User *user) {
     pthread_rwlock_unlock(&server_manager.lock_user);
 }
 
-void add_ip(const char *ip) {
+void server_manager_add_ip(const char *ip) {
     pthread_rwlock_wrlock(&server_manager.lock_session);
     if (server_manager.ip_count < MAX_USERS) {
         server_manager.ips[server_manager.ip_count++] = strdup(ip);
@@ -115,7 +115,7 @@ void add_ip(const char *ip) {
     pthread_rwlock_unlock(&server_manager.lock_session);
 }
 
-void remove_ip(const char *ip) {
+void server_manager_remove_ip(const char *ip) {
     pthread_rwlock_wrlock(&server_manager.lock_session);
     for (int i = 0; i < server_manager.ip_count; i++) {
         if (strcmp(server_manager.ips[i], ip) == 0) {

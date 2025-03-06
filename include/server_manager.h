@@ -15,15 +15,15 @@ typedef struct {
     pthread_rwlock_t lock_session;
 } ServerManager;
 
-void get_users(User *buffer[], int *count);
-int get_number_online();
-int frequency(const char *ip);
-User *find_user_by_id(int id);
-User *find_user_by_username(const char *username);
-void add_user(User *user);
-void remove_user(User *user);
-void add_ip(const char *ip);
-void remove_ip(const char *ip);
+void server_manager_get_users(User *buffer[], int *count);
+int server_manager_get_number_online();
+int server_manager_frequency(const char *ip);
+User *server_manager_find_user_by_id(int id);
+User *server_manager_find_user_by_username(const char *username);
+void server_manager_add_user(User *user);
+void server_manager_remove_user(User *user);
+void server_manager_add_ip(const char *ip);
+void server_manager_remove_ip(const char *ip);
 
 void init_server_manager();
 void destroy_server_manager();

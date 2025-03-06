@@ -1,16 +1,36 @@
-#ifndef ISESSION_H
-#define ISESSION_H
+#ifndef SESSION_H
+#define SESSION_H
 
-#include <stdbool.h>
+#include "controller.h"
+#include "service.h"
 #include "message.h"
+#include <stdbool.h>
+struct Session{
+    bool (*isConnected)(Session* self);
+    void (*setHandler)(Session* self, Controller* handler);
+    void (*setService)(Session* self, Service* service);
+    void (*sendMessage)(Session* self, Message* message);
+    void (*close)(Session* self);
+    
+    int id;
+    Controller* handler;
+    Service* service;
+    bool connected;
+    int socket;
+    void (*login)(Session* self, Message* msg);
+    void (*clientRegister)(Session* self, Message* msg);
+    void (*clientOk)(Session* self);
 
 
-typedef struct {
-    bool (*isConnected)(void *self);
-    void (*setHandler)(void *self, struct IMessageHandler *messageHandler);
-    void (*setService)(void *self, struct Service *service);
-    void (*sendMessage)(void *self, struct Message *message);
-    void (*close)(void *self);
-} ISession;
+    void (*doSendMessage)(Session* self, Message* msg);
+    void (*disconnect)(Session* self);
+    void (*onMessage)(Session* self, Message* msg);
+    void (*processMessage)(Session* self, Message* msg);
+
+    
+};
+
+Session* createSession(int socket, int id);
+void destroySession(Session* session);
 
 #endif

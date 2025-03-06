@@ -1,102 +1,146 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
 #include <pthread.h>
+#include <stddef.h>
+#include <arpa/inet.h>
+
 #include "server.h"
+#include "session.h"
 #include "config.h"
 #include "log.h"
+#include "server_manager.h"
 
-static int server_socket = -1;
-static bool server_running = false;
+static Server server = {
+    .server_socket = -1,
+    .is_running = false
+};
+
+Server* server_get_instance() {
+    return &server;
+}
 
 bool server_init() {
-    if (server_running) {
-        log_message(WARN, "Server already initialized");
-        return true;
-    }
-    
-    // Create socket
-    server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket < 0) {
-        log_message(ERROR, "Failed to create server socket");
-        return false;
-    }
-    
-    // Enable port reuse
-    int opt = 1;
-    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        log_message(WARN, "Failed to set socket options");
-    }
-    
-    // Configure server address
-    struct sockaddr_in server_addr;
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(config_get_port());
-    
-    // Bind to port
-    if (bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        log_message(ERROR, "Failed to bind to port %d", config_get_port());
-        close(server_socket);
-        return false;
-    }
-    
-    // Start listening
-    if (listen(server_socket, 10) < 0) {
-        log_message(ERROR, "Failed to listen on server socket");
-        close(server_socket);
-        return false;
-    }
-    
-    server_running = true;
+    server.is_running = false;
     return true;
 }
 
 void server_start() {
-    if (!server_running || server_socket < 0) {
-        if (!server_init()) {
-            log_message(ERROR, "Failed to initialize server");
-            return;
-        }
-    }
-    
-    log_message(INFO, "Server started on port %d", config_get_port());
-    
-    // Main server loop
+    struct sockaddr_in server_addr;
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
     int client_socket;
+    char client_ip[INET_ADDRSTRLEN];
+    int id = 0;
+
+    // Create socket
+    server.server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server.server_socket < 0) {
+        log_message(ERROR, "Failed to create server socket");
+        return;
+    }
+
+    // Set socket options
+    int opt = 1;
+    if (setsockopt(server.server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        log_message(ERROR, "Failed to set socket options");
+        close(server.server_socket);
+        return;
+    }
+
+    // Configure server address
+    Config* config = config_get_instance();
+    if (config == NULL) {
+        log_message(ERROR, "Failed to get config instance");
+        close(server.server_socket);
+        return;
+    }
     
-    while (server_running) {
-        client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_len);
+    int port = config_get_port(config);
+    
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(port);
+
+    // Bind socket to address
+    if (bind(server.server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        log_message(ERROR, "Failed to bind socket to port %d", port);
+        close(server.server_socket);
+        return;
+    }
+
+    // Listen for connections
+    if (listen(server.server_socket, 10) < 0) {
+        log_message(ERROR, "Failed to listen on socket");
+        close(server.server_socket);
+        return;
+    }
+
+    log_message(INFO, "Start socket port=%d", port);
+    server.is_running = true;
+    log_message(INFO, "Start server Success!");
+
+    // Accept incoming connections
+    while (server.is_running) {
+        client_socket = accept(server.server_socket, (struct sockaddr*)&client_addr, &client_len);
+        
         if (client_socket < 0) {
-            log_message(ERROR, "Failed to accept connection");
+            if (server.is_running) {
+                log_message(ERROR, "Failed to accept client connection");
+            }
             continue;
         }
-        
-        // Handle client connection (simplified, you would create a thread per client)
-        char client_ip[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, sizeof(client_ip));
-        log_message(INFO, "New connection from %s", client_ip);
-        
-        // TODO: Handle client communication
-        
-        close(client_socket);
-    }
-}
 
-void server_stop() {
-    if (server_running) {
-        server_running = false;
-        if (server_socket >= 0) {
-            close(server_socket);
-            server_socket = -1;
+        // Get client IP address
+        inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
+        
+        // Check connection limit for IP
+        int connection_count = server_manager_frequency(client_ip);
+        log_message(INFO, "IP: %s number: %d", client_ip, connection_count);
+        
+        if (connection_count >= config_get_ip_address_limit(config)) {
+            close(client_socket);
+            continue;
         }
-        log_message(INFO, "Server stopped");
+
+        // Create a new session for this client
+        Session* session = createSession(client_socket, ++id);
+        if (session == NULL) {
+            log_message(ERROR, "Failed to create session for client");
+            close(client_socket);
+            continue;
+        }
+        server_manager_add_ip(client_ip);
     }
 }
+/* 
+void server_stop() {
+    if (!server.is_running) {
+        return;
+    }
+    
+    server.is_running = false;
+    
+    // Close all user sessions
+    ServerManager* manager = server_manager_get_instance();
+    User** users = server_manager_get_users(manager);
+    size_t user_count = server_manager_get_user_count(manager);
+    
+    for (size_t i = 0; i < user_count; i++) {
+        if (!users[i]->is_cleaned) {
+            session_close(users[i]->session);
+        }
+    }
+    
+    // Close server socket
+    if (server.server_socket != -1) {
+        close(server.server_socket);
+        server.server_socket = -1;
+    }
+    
+    log_message(INFO, "End socket");
+} */
