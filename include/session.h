@@ -36,10 +36,11 @@ struct Session {
     void (*login)(Session* self, Message* msg);
     void (*clientRegister)(Session* self, Message* msg);
     void (*clientOk)(Session* self);
-    void (*doSendMessage)(Session* self, Message* msg);
+    bool (*doSendMessage)(Session* self, Message* msg);
     void (*disconnect)(Session* self);
     void (*onMessage)(Session* self, Message* msg);
     void (*processMessage)(Session* self, Message* msg);
+    Message* (*readMessage)(Session* self);
     
     // Opaque pointer for private implementation details
     void* _private;

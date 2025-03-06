@@ -4,6 +4,7 @@
 #include "service.h"
 #include "message.h"
 #include "log.h"
+#include "cmd.h"
 
 Controller* createController(Session* client){
     Controller* controller = (Controller*)malloc(sizeof(Controller));
@@ -13,6 +14,7 @@ Controller* createController(Session* client){
     controller->client = client;
     controller->service = NULL;
     controller->user = NULL;
+    controller->onMessage = controller_on_message;
     return controller;
 }
 void destroyController(Controller* controller){
@@ -31,3 +33,32 @@ void controller_set_user(Controller* controller, User* user){
         log_message(INFO, "Client %d: logged in successfully", controller->client->id);
     }
 }
+
+void controller_on_message(Controller* self, Message* message){
+    if(self == NULL || message == NULL){
+        return;
+    }
+    uint8_t command = message->command;
+    
+    switch (command)
+    {
+    case LOGIN:
+        log_message(INFO, "Client %d: login", self->client->id);
+        break;
+    case REGISTER:
+        log_message(INFO, "Client %d: register", self->client->id);
+        break;
+    case LOGOUT:
+        log_message(INFO, "Client %d: logout", self->client->id);
+        break;
+    case GET_SESSION_ID:
+        log_message(INFO, "Client %d: get session id", self->client->id);
+        break;
+    
+    default:
+        log_message(ERROR, "Client %d: unknown command %d", self->client->id, command);
+        break;
+    }
+}
+
+

@@ -18,7 +18,8 @@
         "server_manager.h": "c",
         "inet.h": "c",
         "session.h": "c",
-        "utils.h": "c"
+        "utils.h": "c",
+        "controller.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
