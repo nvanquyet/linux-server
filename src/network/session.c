@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <pthread.h>
+#include "aes_utils.h"
 
 typedef struct
 {
@@ -40,9 +41,6 @@ typedef struct
 typedef struct
 {
     byte *key;
-    int key_length;
-    byte curR;
-    byte curW;
     MessageCollector *collector;
     Sender *sender;
     bool sendKeyComplete;
@@ -54,9 +52,8 @@ void *collector_thread(void *arg);
 Message *read_message(Session *session);
 void process_message(Session *session, Message *msg);
 void do_send_message(Session *session, Message *msg);
-void generate_key(Session *session);
-byte read_key(Session *session, byte b);
-byte write_key(Session *session, byte b);
+void send_key(Session *session);
+void get_key(Session *session, Message *msg);
 void clean_network(Session *session);
 
 void session_login(Session *self, Message *msg);
@@ -112,9 +109,6 @@ Session *createSession(int socket, int id)
     session->processMessage = session_process_message;
 
     private->key = NULL;
-    private->key_length = 0;
-    private->curR = 0;
-    private->curW = 0;
     private->sendKeyComplete = false;
     private->isClosed = false;
 
@@ -303,6 +297,26 @@ void session_login(Session *self, Message *msg)
     self->isLogin = false;
 }
 
+void send_key(Session *session)
+{
+    if (session == NULL)
+    {
+        return;
+    }
+
+    SessionPrivate *private = (SessionPrivate *)session->_private;
+    if (private->sendKeyComplete)
+    {
+        return;
+    }
+
+    Message *msg = message_create(GET_SESSION_ID);
+    if (msg != NULL)
+    {
+        session_send_message(session, msg);
+    }
+}
+
 void session_register(Session *self, Message *msg)
 {
     if (self == NULL || msg == NULL)
@@ -359,101 +373,6 @@ void session_on_message(Session *self, Message *msg)
     }
 }
 
-void generate_key(Session *session)
-{
-    if (session == NULL)
-    {
-        return;
-    }
-
-    SessionPrivate *private = (SessionPrivate *)session->_private;
-
-    char key_prefix[] = "game_";
-    char random_part[10];
-    sprintf(random_part, "%d", utils_next_int(10000));
-
-    int prefix_len = strlen(key_prefix);
-    int random_len = strlen(random_part);
-    int key_len = prefix_len + random_len;
-
-    if (private->key != NULL)
-    {
-        free(private->key);
-    }
-
-    private->key = (byte *)malloc(key_len);
-    private->key_length = key_len;
-
-    memcpy(private->key, key_prefix, prefix_len);
-    memcpy(private->key + prefix_len, random_part, random_len);
-}
-
-void send_key(Session *session)
-{
-    if (session == NULL)
-    {
-        return;
-    }
-
-    SessionPrivate *private = (SessionPrivate *)session->_private;
-    if (private->sendKeyComplete)
-    {
-        return;
-    }
-
-    generate_key(session);
-
-    Message *msg = message_create(GET_SESSION);
-
-    do_send_message(session, msg);
-
-    private->sendKeyComplete = true;
-
-    private->sender->running = true;
-    pthread_create(&private->sender->thread, NULL, sender_thread, private->sender);
-}
-
-byte read_key(Session *session, byte b)
-{
-    if (session == NULL)
-    {
-        return b;
-    }
-
-    SessionPrivate *private = (SessionPrivate *)session->_private;
-    byte curR = private->curR;
-    private->curR = (byte)(curR + 1);
-
-    byte result = (byte)((private->key[curR] & 255) ^ (b & 255));
-
-    if (private->curR >= private->key_length)
-    {
-        private->curR %= private->key_length;
-    }
-
-    return result;
-}
-
-byte write_key(Session *session, byte b)
-{
-    if (session == NULL)
-    {
-        return b;
-    }
-
-    SessionPrivate *private = (SessionPrivate *)session->_private;
-    byte curW = private->curW;
-    private->curW = (byte)(curW + 1);
-
-    byte result = (byte)((private->key[curW] & 255) ^ (b & 255));
-
-    if (private->curW >= private->key_length)
-    {
-        private->curW %= private->key_length;
-    }
-
-    return result;
-}
 
 void clean_network(Session *session)
 {
@@ -467,9 +386,6 @@ void clean_network(Session *session)
     if (session->user != NULL && !session->user->isCleaned)
     {
     }
-
-    private->curR = 0;
-    private->curW = 0;
 
     session->connected = false;
     session->isLoginSuccess = false;
@@ -542,6 +458,8 @@ void *collector_thread(void *arg)
     return NULL;
 }
 
+
+
 Message *read_message(Session *session)
 {
     if (session == NULL)
@@ -572,6 +490,8 @@ void do_send_message(Session *session, Message *msg)
     {
         return;
     }
+    
+
 }
 
 MessageQueue *message_queue_create(int initial_capacity)
