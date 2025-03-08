@@ -1,5 +1,5 @@
 #ifndef SQLSTATEMENT_H
 #define SQLSTATEMENT_H
 
-#define CREATE_USER_TABLE "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, password TEXT NOT NULL, session TEXT);"
+#define REGISTER "INSERT INTO users (username, password) VALUES (?, ?)"
 #endif

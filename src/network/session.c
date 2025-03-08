@@ -511,15 +511,14 @@ Message *session_read_message(Session *session)
     encrypted_size = ntohl(encrypted_size);
     log_message(INFO, "Encrypted size: %u", encrypted_size);
     
-    // Create a new message
+
     Message* msg = message_create(command);
     if (msg == NULL) {
         log_message(ERROR, "Failed to create message");
         return NULL;
     }
     
-    // Allocate buffer for encrypted data
-    free(msg->buffer); // Free the initial buffer
+    free(msg->buffer);
     msg->buffer = (unsigned char*)malloc(encrypted_size);
     if (msg->buffer == NULL) {
         log_message(ERROR, "Failed to allocate buffer");
@@ -528,7 +527,6 @@ Message *session_read_message(Session *session)
     }
     msg->size = encrypted_size;
     
-    // Read encrypted data
     size_t total_read = 0;
     while (total_read < encrypted_size) {
         ssize_t bytes_read = recv(session->socket, msg->buffer + total_read, 
@@ -543,7 +541,7 @@ Message *session_read_message(Session *session)
     msg->position = encrypted_size;
     log_message(INFO, "Received %zu bytes of encrypted data", total_read);
     
-    // Make sure we have a persistent key (not on stack)
+
     if (private->key == NULL) {
         private->key = (unsigned char*)malloc(32);
         if (private->key == NULL) {
@@ -551,21 +549,34 @@ Message *session_read_message(Session *session)
             message_destroy(msg);
             return NULL;
         }
-        // Use the same key as the client
         memcpy(private->key, "test_secret_key_for_aes_256_cipher", 32);
     }
     
-    // Decrypt the message
     if (!message_decrypt(msg, private->key, iv)) {
         log_message(ERROR, "Failed to decrypt message");
         message_destroy(msg);
         return NULL;
     }
 
-    // Reset position for reading
-    msg->position = 0;
-    log_message(INFO, "Message decrypted successfully");
+    if(msg->command == 3) {
+        log_message(INFO, "register");
     
+        char username[256] = {0};
+        char password[256] = {0};
+        strcpy(username, "default_user");
+        strcpy(password, "default_password");
+        
+        User *user = createUser(NULL, session, username, password);
+        if (user != NULL) {
+            user->userRegister(user);
+        
+            session->user = user;
+        } else {
+            log_message(ERROR, "Failed to create user");
+        }
+    }
+
+    msg->position = 0;
     return msg;
 }
 
