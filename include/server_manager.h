@@ -2,6 +2,7 @@
 #define SERVER_MANAGER_H
 
 #include <pthread.h>
+#include <stdbool.h>
 #include "user.h"
 
 #define MAX_USERS 1000
@@ -13,7 +14,10 @@ typedef struct {
     int ip_count;
     pthread_rwlock_t lock_user;
     pthread_rwlock_t lock_session;
+    bool initialized;
 } ServerManager;
+
+ServerManager *server_manager_get_instance();
 
 void server_manager_get_users(User *buffer[], int *count);
 int server_manager_get_number_online();

@@ -41,6 +41,7 @@ struct Session {
     void (*onMessage)(Session* self, Message* msg);
     void (*processMessage)(Session* self, Message* msg);
     Message* (*readMessage)(Session* self);
+    void (*closeMessage)(Session* self);
     
     // Opaque pointer for private implementation details
     void* _private;

@@ -37,6 +37,22 @@ User* createUser(User* self, Session* client, char* username, char* password) {
 }
 
 void destroyUser(User* user) {
+    if (user == NULL) {
+        return;
+    }
+    
+    if (user->username != NULL) {
+        free(user->username);
+    }
+    
+    if (user->password != NULL) {
+        free(user->password);
+    }
+    
+    if (user->ipAddr != NULL) {
+        free(user->ipAddr);
+    }
+    
     free(user);
 }
 

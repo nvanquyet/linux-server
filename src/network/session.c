@@ -58,6 +58,7 @@ bool do_send_message(Session *session, Message *msg);
 void send_key(Session *session);
 void get_key(Session *session, Message *msg);
 void clean_network(Session *session);
+void session_close_message(Session *session);
 
 void session_login(Session *self, Message *msg);
 void session_register(Session *self, Message *msg);
@@ -112,6 +113,7 @@ Session *createSession(int socket, int id)
     session->onMessage = session_on_message;
     session->processMessage = session_process_message;
     session->readMessage = session_read_message;
+    session->closeMessage = session_close_message;
 
     private->key = NULL;
     private->sendKeyComplete = false;
@@ -238,6 +240,38 @@ bool session_do_send_message(Session *session, Message *msg)
     return true;
 }
 
+void session_close_message(Session *self)
+{
+    if (self == NULL) {
+        return;
+    }
+
+    SessionPrivate *private = (SessionPrivate *)self->_private;
+    if (!private || private->isClosed) {
+        return;
+    }
+    
+    private->isClosed = true;
+
+    if (self->IPAddress != NULL) {
+        server_manager_remove_ip(self->IPAddress);
+    } else {
+        log_message(ERROR, "Failed to remove IP address");
+    }
+    
+    //if user exists (mean user is logged in), remove user from server manager and clean user
+    if (self->user != NULL) {
+        server_manager_remove_user(self->user);
+        destroyUser(self->user);
+        self->user = NULL;
+    }
+    
+    if (self->handler != NULL) {
+        self->handler->onDisconnected(self->handler);
+    } else {
+        log_message(ERROR, "Failed to call onDisconnected");
+    }
+}
 void session_close(Session *self)
 {
     if (self == NULL)
@@ -462,6 +496,7 @@ void *collector_thread(void *arg)
             break;
         }
     }
+    session_close_message(session);
 
     return NULL;
 }
@@ -484,7 +519,7 @@ Message *session_read_message(Session *session)
     
     // Read command
     if (recv(session->socket, &command, sizeof(command), 0) <= 0) {
-        log_message(ERROR, "Failed to receive command");
+        log_message(ERROR, "Failed to receive command, closing session");
         return NULL;
     }
     log_message(INFO, "Received command: %d", command);
@@ -556,24 +591,6 @@ Message *session_read_message(Session *session)
         log_message(ERROR, "Failed to decrypt message");
         message_destroy(msg);
         return NULL;
-    }
-
-    if(msg->command == 3) {
-        log_message(INFO, "register");
-    
-        char username[256] = {0};
-        char password[256] = {0};
-        strcpy(username, "default_user");
-        strcpy(password, "default_password");
-        
-        User *user = createUser(NULL, session, username, password);
-        if (user != NULL) {
-            user->userRegister(user);
-        
-            session->user = user;
-        } else {
-            log_message(ERROR, "Failed to create user");
-        }
     }
 
     msg->position = 0;

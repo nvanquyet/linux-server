@@ -6,6 +6,15 @@
 #include "log.h"
 #include "cmd.h"
 
+
+void controller_on_message(Controller* self, Message* message);
+void controller_on_connection_fail(Controller* self);
+void controller_on_disconnected(Controller* self);
+void controller_on_connect_ok(Controller* self);
+void controller_message_in_chat(Controller* self, Message* ms);
+void controller_message_not_in_chat(Controller* self, Message* ms);
+void controller_new_message(Controller* self, Message* ms);
+
 Controller* createController(Session* client){
     Controller* controller = (Controller*)malloc(sizeof(Controller));
     if (controller == NULL) {
@@ -15,6 +24,13 @@ Controller* createController(Session* client){
     controller->service = NULL;
     controller->user = NULL;
     controller->onMessage = controller_on_message;
+    controller->onConnectionFail = controller_on_connection_fail;
+    controller->onDisconnected = controller_on_disconnected;
+    controller->onConnectOK = controller_on_connect_ok;
+    controller->messageInChat = controller_message_in_chat;
+    controller->messageNotInChat = controller_message_not_in_chat;
+    controller->newMessage = controller_new_message;
+
     return controller;
 }
 void destroyController(Controller* controller){
@@ -59,6 +75,48 @@ void controller_on_message(Controller* self, Message* message){
         log_message(ERROR, "Client %d: unknown command %d", self->client->id, command);
         break;
     }
+}
+
+void controller_on_connection_fail(Controller* self){
+    if(self == NULL){
+        return;
+    }
+    log_message(ERROR, "Client %d: connection fail", self->client->id);
+}
+
+void controller_on_disconnected(Controller* self){
+    if(self == NULL){
+        return;
+    }
+    log_message(ERROR, "Client %d: disconnected", self->client->id);
+}
+
+void controller_on_connect_ok(Controller* self){
+    if(self == NULL){
+        return;
+    }
+    log_message(INFO, "Client %d: connected", self->client->id);
+}
+
+void controller_message_in_chat(Controller* self, Message* ms){
+    if(self == NULL || ms == NULL){
+        return;
+    }
+    log_message(INFO, "Client %d: message in chat", self->client->id);
+}
+
+void controller_message_not_in_chat(Controller* self, Message* ms){
+    if(self == NULL || ms == NULL){
+        return;
+    }
+    log_message(INFO, "Client %d: message not in chat", self->client->id);
+}
+
+void controller_new_message(Controller* self, Message* ms){
+    if(self == NULL || ms == NULL){
+        return;
+    }
+    log_message(INFO, "Client %d: new message", self->client->id);
 }
 
 

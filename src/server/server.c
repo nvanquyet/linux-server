@@ -26,6 +26,7 @@ Server *server_get_instance()
 bool server_init()
 {
     server.is_running = false;
+    init_server_manager();
     return true;
 }
 
@@ -118,6 +119,11 @@ void server_start()
             close(client_socket);
             continue;
         }
+        session->IPAddress = strdup(client_ip);
+        Controller *controller = createController(session);
+        session->setHandler(session, controller);
+        Service *service = createService(session);
+        session->setService(session, service);
         server_manager_add_ip(client_ip);
     }
 }
