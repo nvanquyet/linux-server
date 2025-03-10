@@ -8,7 +8,7 @@
 #include "config.h"
 #include "server.h"
 #include "log.h"
-#include "utils.h"
+#include "m_utils.h"
 
 
 static bool is_stop = false;
@@ -52,7 +52,6 @@ int main(int argc, char* argv[]) {
     
     
     while (!is_stop) {
-        
         sleep(1);
     }
     

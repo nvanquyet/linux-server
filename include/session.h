@@ -45,6 +45,7 @@ struct Session {
     
     // Opaque pointer for private implementation details
     void* _private;
+    void* _key;
 };
 
 Session* createSession(int socket, int id);

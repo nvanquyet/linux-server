@@ -52,10 +52,13 @@ void controller_set_user(Controller* controller, User* user){
 
 void controller_on_message(Controller* self, Message* message){
     if(self == NULL || message == NULL){
+        log_message(ERROR, "Client %d: message is NULL", self->client->id);
         return;
     }
+
+    log_message(INFO, "here");
     uint8_t command = message->command;
-    
+    log_message(INFO, "Command %d", command);
     switch (command)
     {
     case LOGIN:

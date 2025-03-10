@@ -5,8 +5,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include "utils.h"
+#include "m_utils.h"
 #include "log.h"
+#include <openssl/sha.h>
+#include <stdint.h>
 
 bool is_port_available(int port)
 {
@@ -38,4 +40,36 @@ bool is_port_available(int port)
 int utils_next_int(int max)
 {
     return rand() % max;
+}
+
+int utils_mod_exp(int base, int exp, int mod)
+{
+    int result = 1;
+    base = base % mod;
+
+    while (exp > 0)
+    {
+        if (exp % 2 == 1)
+        {
+            result = (result * base) % mod;
+        }
+
+        exp = exp >> 1;
+        base = (base * base) % mod;
+    }
+
+    return result;
+}
+
+
+void generate_aes_key_from_K(uint32_t K, unsigned char *aes_key) {
+    if (aes_key == NULL) {
+        log_message(ERROR, "AES key buffer is NULL");
+        return;
+    }
+    
+    unsigned char hash[SHA256_DIGEST_LENGTH]; 
+    SHA256((unsigned char *)&K, sizeof(K), hash);
+    
+    memcpy(aes_key, hash, 32);
 }
