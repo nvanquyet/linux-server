@@ -196,7 +196,7 @@ bool message_encrypt(Message *msg, const unsigned char *key, const unsigned char
  * @return true if decryption was successful, false otherwise
  */
 bool message_decrypt(Message *msg, const unsigned char *key, const unsigned char *iv)
-{   
+{
     if (msg == NULL || key == NULL || iv == NULL || msg->position == 0)
     {
         log_message(ERROR, "Failed to decrypt message, invalid parameters");
@@ -211,34 +211,25 @@ bool message_decrypt(Message *msg, const unsigned char *key, const unsigned char
     }
 
     size_t plaintext_len = 0;
-    
-    // Log some debug information
-    log_message(DEBUG, "Decrypting message with key starting with: %.8s...", key);
-    log_message(DEBUG, "First 8 bytes of encrypted data: %02X %02X %02X %02X %02X %02X %02X %02X",
-        msg->buffer[0], msg->buffer[1], msg->buffer[2], msg->buffer[3],
-        msg->buffer[4], msg->buffer[5], msg->buffer[6], msg->buffer[7]);
 
-    // Try to decrypt
     aes_decrypt(msg->buffer, msg->position, (unsigned char *)key, (unsigned char *)iv,
                 plaintext, &plaintext_len);
-    
-    // Check if decryption produced reasonable output
-    if (plaintext_len == 0) {
+
+    if (plaintext_len == 0)
+    {
         log_message(ERROR, "Decryption failed - produced zero-length output");
         free(plaintext);
         return false;
     }
-    
-    // Log the decrypted content
+
     char *safe_text = malloc(plaintext_len + 1);
-    if (safe_text) {
+    if (safe_text)
+    {
         memcpy(safe_text, plaintext, plaintext_len);
         safe_text[plaintext_len] = '\0';
-        log_message(INFO, "Decrypted message (%zu bytes): %s", plaintext_len, safe_text);
         free(safe_text);
     }
 
-    // Replace the buffer with decrypted content
     free(msg->buffer);
     msg->buffer = plaintext;
     msg->size = msg->position;

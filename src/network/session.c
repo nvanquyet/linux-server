@@ -602,7 +602,6 @@ Message *session_read_message(Session *session)
     {
         return NULL;
     }
-    log_message(INFO, "Reading message");
 
     SessionPrivate *private = (SessionPrivate *)session->_private;
 
@@ -616,8 +615,6 @@ Message *session_read_message(Session *session)
 
     if (command == GET_SESSION_ID || command == TRADE_KEY || command == TRADE_DH_PARAMS)
     {
-        log_message(INFO, "Reading unencrypted message");
-
         uint32_t size_network;
         if (recv(session->socket, &size_network, sizeof(size_network), 0) <= 0)
         {
@@ -625,7 +622,6 @@ Message *session_read_message(Session *session)
             return NULL;
         }
         uint32_t size = ntohl(size_network);
-        log_message(INFO, "Unencrypted message size: %u", size);
 
         Message *msg = message_create(command);
         if (msg == NULL)
@@ -661,13 +657,10 @@ Message *session_read_message(Session *session)
                 total_read += bytes_read;
             }
             msg->position = size;
-            log_message(INFO, "Received %zu bytes of unencrypted data", total_read);
         }
 
         return msg;
     }
-
-    log_message(INFO, "Reading encrypted message");
 
     unsigned char iv[16];
     if (recv(session->socket, iv, sizeof(iv), 0) <= 0)
@@ -683,7 +676,6 @@ Message *session_read_message(Session *session)
         return NULL;
     }
     original_size = ntohl(original_size);
-    log_message(INFO, "Original size: %u", original_size);
 
     uint32_t encrypted_size;
     if (recv(session->socket, &encrypted_size, sizeof(encrypted_size), 0) <= 0)
@@ -692,7 +684,6 @@ Message *session_read_message(Session *session)
         return NULL;
     }
     encrypted_size = ntohl(encrypted_size);
-    log_message(INFO, "Encrypted size: %u", encrypted_size);
 
     Message *msg = message_create(command);
     if (msg == NULL)
@@ -725,7 +716,6 @@ Message *session_read_message(Session *session)
         total_read += bytes_read;
     }
     msg->position = encrypted_size;
-    log_message(INFO, "Received %zu bytes of encrypted data", total_read);
 
     if (private->key == NULL)
     {
@@ -751,8 +741,6 @@ Message *session_read_message(Session *session)
 }
 void process_message(Session *session, Message *msg)
 {
-
-    log_message(INFO, "Processing message");
     if (session == NULL || msg == NULL)
     {
         return;
@@ -764,7 +752,6 @@ void process_message(Session *session, Message *msg)
         Controller *handler = session->handler;
         if (handler != NULL)
         {
-            log_message(INFO, "Calling onMessage");
             handler->onMessage(handler, msg);
         }
         else
@@ -807,9 +794,6 @@ bool do_send_message(Session *session, Message *msg)
                 return false;
             }
         }
-
-        log_message(INFO, "Sent unencrypted message with command %d, size %zu",
-                    msg->command, msg->position);
         return true;
     }
 

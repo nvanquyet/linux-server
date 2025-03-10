@@ -56,9 +56,7 @@ void controller_on_message(Controller* self, Message* message){
         return;
     }
 
-    log_message(INFO, "here");
     uint8_t command = message->command;
-    log_message(INFO, "Command %d", command);
     switch (command)
     {
     case LOGIN:
