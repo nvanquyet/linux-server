@@ -1,6 +1,7 @@
 #include "service.h"
 #include "session.h"
 #include "log.h"
+#include <stdlib.h>
 
 
 Service* createService(Session* session) {

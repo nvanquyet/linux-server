@@ -330,52 +330,55 @@ void session_disconnect(Session *self)
     self->connected = false;
 }
 
-void session_login(Session *self, Message *msg)
-{
-    if (self == NULL || msg == NULL)
-    {
+void session_login(Session *self, Message *msg) {
+    if (self == NULL || msg == NULL) {
         return;
     }
 
     SessionPrivate *private = (SessionPrivate *)self->_private;
-    if (!self->connected || !private->sendKeyComplete)
-    {
+    if (!self->connected || !private->sendKeyComplete) {
         session_disconnect(self);
         return;
     }
 
-    if (self->isLoginSuccess || self->isLogin)
-    {
+    if (self->isLoginSuccess || self->isLogin) {
         return;
     }
 
     self->isLogin = true;
 
-    char username[256];
-    char password[256];
-
+    msg->position = 0; 
+    
+    char username[256] = {0};
+    char password[256] = {0};
+    
+    if (!message_read_string(msg, username, sizeof(username)) ||
+        !message_read_string(msg, password, sizeof(password))) {
+        log_message(ERROR, "Failed to read login data");
+        return;
+    }
+    
+    log_message(INFO, "Login attempt with username: %s, password: %s", username, password);
+    
+    // Create user object
     User *user = createUser(NULL, self, username, password);
-    if (user != NULL)
-    {
-
+    if (user != NULL) {
+        user->login(user);
         self->isLoginSuccess = true;
         self->user = user;
 
-        if (self->handler != NULL)
-        {
+        if (self->handler != NULL) {
             controller_set_user(self->handler, user);
             controller_set_service(self->handler, self->service);
         }
 
-        if (self->service != NULL)
-        {
+        if (self->service != NULL) {
             service_login_success(self->service);
         }
     }
 
     self->isLogin = false;
 }
-
 void trade_key(Session *session, Message *msg)
 {
     if (session == NULL)
@@ -739,27 +742,6 @@ Message *session_read_message(Session *session)
     msg->position = 0;
     return msg;
 }
-void process_message(Session *session, Message *msg)
-{
-    if (session == NULL || msg == NULL)
-    {
-        return;
-    }
-
-    SessionPrivate *private = (SessionPrivate *)session->_private;
-    if (!private->isClosed)
-    {
-        Controller *handler = session->handler;
-        if (handler != NULL)
-        {
-            handler->onMessage(handler, msg);
-        }
-        else
-        {
-            log_message(ERROR, "Failed to call onMessage");
-        }
-    }
-}
 
 bool do_send_message(Session *session, Message *msg)
 {
@@ -849,6 +831,28 @@ bool do_send_message(Session *session, Message *msg)
     return true;
 }
 
+void process_message(Session *session, Message *msg)
+{
+    if (session == NULL || msg == NULL)
+    {
+        return;
+    }
+
+    SessionPrivate *private = (SessionPrivate *)session->_private;
+    if (!private->isClosed)
+    {
+        Controller *handler = session->handler;
+        if (handler != NULL)
+        {
+            handler->onMessage(handler, msg);
+        }
+        else
+        {
+            log_message(ERROR, "Failed to call onMessage");
+        }
+    }
+}
+
 MessageQueue *message_queue_create(int initial_capacity)
 {
     MessageQueue *queue = (MessageQueue *)malloc(sizeof(MessageQueue));
@@ -856,7 +860,7 @@ MessageQueue *message_queue_create(int initial_capacity)
     {
         return NULL;
     }
-
+    
     queue->messages = (Message **)malloc(sizeof(Message *) * initial_capacity);
     queue->capacity = initial_capacity;
     queue->size = 0;

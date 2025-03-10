@@ -50,9 +50,6 @@ int db_manager_update(const char *sql, ...);
 int db_manager_update_with_params(const char *sql, int param_count, ...);
 DbResultSet *db_manager_query(const char *sql);
 
-int db_manager_update_bag(const char *bag, int id);
-int db_manager_update_coin(long coin, int id);
-
 void db_result_set_free(DbResultSet *result_set);
 
 #endif

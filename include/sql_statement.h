@@ -1,5 +1,6 @@
-#ifndef SQLSTATEMENT_H
-#define SQLSTATEMENT_H
+#ifndef SQL_STATEMENT_H
+#define SQL_STATEMENT_H
 
-#define REGISTER "INSERT INTO users (username, password) VALUES (?, ?)"
+#define SQL_REGISTER "INSERT INTO users (username, password) VALUES (?, ?)"
+#define SQL_LOGIN "SELECT * FROM users WHERE username=?"
 #endif

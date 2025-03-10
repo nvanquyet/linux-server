@@ -5,6 +5,7 @@
 #include "message.h"
 #include "log.h"
 #include "cmd.h"
+#include <stdlib.h>
 
 
 void controller_on_message(Controller* self, Message* message);
@@ -60,7 +61,7 @@ void controller_on_message(Controller* self, Message* message){
     switch (command)
     {
     case LOGIN:
-        log_message(INFO, "Client %d: login", self->client->id);
+        self->client->login(self->client, message);
         break;
     case REGISTER:
         log_message(INFO, "Client %d: register", self->client->id);

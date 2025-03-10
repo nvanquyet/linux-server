@@ -8,6 +8,7 @@
 typedef struct User User;
 typedef struct Session Session;
 typedef struct Service Service;
+typedef struct Message Message;
 struct User
 {
     int id;
@@ -20,8 +21,8 @@ struct User
     long lastLogin;
 
     void (*login)(User *self);
-    void (*logout)(User *self);
-    void (*userRegister)(User *self);
+    void (*logout)(User *self, Message *msg);
+    void (*userRegister)(User *self, Message *msg);
     bool (*isCleaned)(User *self);
 };
 
