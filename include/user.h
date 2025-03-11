@@ -28,6 +28,7 @@ struct User
     void (*login)(User *self);
     void (*logout)(User *self);
     void (*userRegister)(User *self);
+    void (*clean_user)(User *self);
 };
 
 User *createUser(User *user, Session *client, char *username, char *password);

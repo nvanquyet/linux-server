@@ -290,16 +290,11 @@ void session_close_message(Session *self)
     {
         log_message(INFO, "Removing IP address %s", self->IPAddress);
         server_manager_remove_ip(self->IPAddress);
+        server_manager_remove_user(self->user);
     }
     else
     {
         log_message(ERROR, "Failed to remove IP address");
-    }
-
-    if (self->user != NULL)
-    {
-        destroyUser(self->user);
-        self->user = NULL;
     }
 
     if (self->handler != NULL)
@@ -309,6 +304,10 @@ void session_close_message(Session *self)
     else
     {
         log_message(ERROR, "Failed to call onDisconnected");
+    }
+
+    if(self->user != NULL){
+        self->user->clean_user(self->user);
     }
     session_close(self);
 }
@@ -330,10 +329,6 @@ void clean_network(Session *session)
     }
 
     SessionPrivate *private = (SessionPrivate *)session->_private;
-
-    if (session->user != NULL && !session->user->isCleaned)
-    {
-    }
 
     session->connected = false;
     session->isLoginSuccess = false;

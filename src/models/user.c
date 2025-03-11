@@ -15,6 +15,7 @@ void login(User *self);
 void logout(User *self);
 void userRegister(User *self);
 void close_session_callback(void *arg);
+void cleanUp(User *self);
 
 typedef struct
 {
@@ -46,6 +47,7 @@ User *createUser(User *self, Session *client, char *username, char *password)
     self->logout = logout;
     self->userRegister = userRegister;
     self->isCleaned = false;
+    self->clean_user = cleanUp;
     self->isLoaded = false;
 
     return self;
@@ -74,6 +76,22 @@ void destroyUser(User *user)
     }
 
     free(user);
+}
+
+void cleanUp(User *self)
+{
+    if (self == NULL)
+    {
+        return;
+    }
+    if(self->session != NULL){
+        self->session = NULL;
+    }
+    if(self->service != NULL){
+        self->service = NULL;
+    }
+    self->isCleaned = true;
+    destroyUser(self);
 }
 
 void user_set_session(User *user, Session *session)
