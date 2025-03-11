@@ -21,7 +21,8 @@
         "utils.h": "c",
         "controller.h": "c",
         "mysql.h": "c",
-        "m_utils.h": "c"
+        "m_utils.h": "c",
+        "db_statement.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

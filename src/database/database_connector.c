@@ -203,6 +203,30 @@ MYSQL *db_manager_get_connection()
 
 void db_manager_release_connection(MYSQL *conn)
 {
+    if (conn == NULL) {
+        return;
+    }
+    
+    DbManager *manager = db_manager_get_instance();
+    if (manager == NULL) {
+        mysql_close(conn);
+        return;
+    }
+    
+    if (mysql_ping(conn) != 0) {
+        for (int i = 0; i < manager->active_connections; i++) {
+            if (manager->connections[i] == conn) {
+                mysql_close(conn);
+                
+                for (int j = i; j < manager->active_connections - 1; j++) {
+                    manager->connections[j] = manager->connections[j+1];
+                }
+                
+                manager->active_connections--;
+                break;
+            }
+        }
+    }
 }
 
 int db_manager_update(const char *sql, ...)

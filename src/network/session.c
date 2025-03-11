@@ -82,6 +82,7 @@ void session_on_message(Session *self, Message *msg);
 void session_process_message(Session *self, Message *msg);
 bool session_do_send_message(Session *self, Message *msg);
 void session_close(Session *self);
+void session_send_message(Session *session, Message *msg);
 Message *session_read_message(Session *self);
 
 MessageQueue *message_queue_create(int initial_capacity);
@@ -160,12 +161,14 @@ Session *createSession(int socket, int id)
 
     session->handler = (Controller *)malloc(sizeof(Controller));
     session->service = (Service *)malloc(sizeof(Service));
+    session->handler->service = session->service;
     session->user = NULL;
-
-    log_message(INFO, "New session: %d", id);
 
     private->collector->running = true;
     pthread_create(&private->collector->thread, NULL, collector_thread, private->collector);
+
+    private->sender->running = true;
+    pthread_create(&private->sender->thread, NULL, sender_thread, private->sender);
 
     return session;
 }
@@ -249,8 +252,9 @@ void session_send_message(Session *session, Message *message)
     }
 
     SessionPrivate *private = (SessionPrivate *)session->_private;
-    if (session->connected && private->sender != NULL)
+    if (session->connected && private->sender != NULL && private->sender->running)
     {
+        log_message(DEBUG, "Adding message to queue 0");
         message_queue_add(private->sender->queue, message);
     }
 }
@@ -358,22 +362,22 @@ void session_login(Session *self, Message *msg) {
         return;
     }
     
-    log_message(INFO, "Login attempt with username: %s, password: %s", username, password);
-    
-    // Create user object
     User *user = createUser(NULL, self, username, password);
     if (user != NULL) {
         user->login(user);
-        self->isLoginSuccess = true;
-        self->user = user;
-
-        if (self->handler != NULL) {
-            controller_set_user(self->handler, user);
-            controller_set_service(self->handler, self->service);
-        }
-
-        if (self->service != NULL) {
-            service_login_success(self->service);
+        if(user->isLoaded){
+            self->isLoginSuccess = true;
+            self->user = user;
+    
+            if (self->handler != NULL) {
+                controller_set_user(self->handler, user);
+                controller_set_service(self->handler, self->service);
+            }
+        } else {
+            self->isLoginSuccess = false;
+            self->isLogin = false;
+            log_message(INFO, "Login failed: Invalid username or password");
+            destroyUser(user);
         }
     }
 
@@ -464,6 +468,30 @@ void session_register(Session *self, Message *msg)
     {
         return;
     }
+
+    msg->position = 0;
+    char username[256] = {0};
+    char password[256] = {0};
+
+    if (!message_read_string(msg, username, sizeof(username)) ||
+        !message_read_string(msg, password, sizeof(password)))
+    {
+        log_message(ERROR, "Failed to read register data");
+        return;
+    }
+
+    User *user = createUser(NULL, self, username, password);
+    if (user != NULL)
+    {
+        user->userRegister(user);
+        self->user = user;
+    }
+    else
+    {
+        log_message(ERROR, "Failed to create user");
+    }
+
+
 }
 
 void session_client_ok(Session *self)
@@ -558,6 +586,7 @@ void *sender_thread(void *arg)
                 if (msg != NULL)
                 {
                     do_send_message(session, msg);
+                    message_destroy(msg);
                 }
             }
         }

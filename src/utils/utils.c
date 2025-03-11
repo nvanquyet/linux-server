@@ -9,6 +9,8 @@
 #include "log.h"
 #include <openssl/sha.h>
 #include <stdint.h>
+#include <regex.h>
+#include <stdbool.h>
 
 bool is_port_available(int port)
 {
@@ -61,15 +63,116 @@ int utils_mod_exp(int base, int exp, int mod)
     return result;
 }
 
-
-void generate_aes_key_from_K(uint32_t K, unsigned char *aes_key) {
-    if (aes_key == NULL) {
+void generate_aes_key_from_K(uint32_t K, unsigned char *aes_key)
+{
+    if (aes_key == NULL)
+    {
         log_message(ERROR, "AES key buffer is NULL");
         return;
     }
-    
-    unsigned char hash[SHA256_DIGEST_LENGTH]; 
+
+    unsigned char hash[SHA256_DIGEST_LENGTH];
     SHA256((unsigned char *)&K, sizeof(K), hash);
-    
+
     memcpy(aes_key, hash, 32);
+}
+
+bool validate_username_password(char *username, char *password)
+{
+    if (username == NULL || password == NULL)
+    {
+        return false;
+    }
+
+    regex_t username_regex;
+    int username_result;
+    char error_buffer[100];
+
+    if (regcomp(&username_regex, "^[a-zA-Z][a-zA-Z0-9_]{2,19}$", REG_EXTENDED) != 0)
+    {
+        log_message(ERROR, "Failed to compile username regex");
+        return false;
+    }
+
+    username_result = regexec(&username_regex, username, 0, NULL, 0);
+    regfree(&username_regex);
+
+    if (username_result != 0)
+    {
+        regerror(username_result, &username_regex, error_buffer, sizeof(error_buffer));
+        log_message(ERROR, "Username validation failed: Must be 3-20 characters, start with a letter, and contain only letters, numbers, and underscores");
+        return false;
+    }
+
+    size_t password_len = strlen(password);
+
+    if (password_len < 6 || password_len > 64)
+    {
+        log_message(ERROR, "Password validation failed: Password must be between 6-64 characters");
+        return false;
+    }
+
+    bool has_digit = false;
+    bool has_lowercase = false;
+    bool has_uppercase = false;
+    bool has_invalid_char = false;
+
+    for (size_t i = 0; i < password_len; i++)
+    {
+        char c = password[i];
+
+        if (c >= '0' && c <= '9')
+        {
+            has_digit = true;
+        }
+        else if (c >= 'a' && c <= 'z')
+        {
+            has_lowercase = true;
+        }
+        else if (c >= 'A' && c <= 'Z')
+        {
+            has_uppercase = true;
+        }
+        else if (c == ' ')
+        {
+
+            log_message(ERROR, "Password validation failed: Password cannot contain spaces");
+            return false;
+        }
+        else
+        {
+
+            if (strchr("!@#$%^&*()_+-=[]{};:'\",.<>/?\\|", c) == NULL)
+            {
+                has_invalid_char = true;
+                break;
+            }
+        }
+    }
+
+    if (!has_digit)
+    {
+        log_message(ERROR, "Password validation failed: Password must contain at least one digit");
+        return false;
+    }
+
+    if (!has_lowercase)
+    {
+        log_message(ERROR, "Password validation failed: Password must contain at least one lowercase letter");
+        return false;
+    }
+
+    if (!has_uppercase)
+    {
+        log_message(ERROR, "Password validation failed: Password must contain at least one uppercase letter");
+        return false;
+    }
+
+    if (has_invalid_char)
+    {
+        log_message(ERROR, "Password validation failed: Password contains invalid characters");
+        return false;
+    }
+
+    return true;
 }

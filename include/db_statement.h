@@ -21,5 +21,6 @@ bool db_bind_string(DbStatement* stmt, int index, const char* value);
 bool db_execute(DbStatement* stmt);
 DbResultSet *db_execute_query(DbStatement *stmt);
 void diagnose_statement(DbStatement *stmt);
+void db_statement_free(DbStatement *stmt);
 
 #endif

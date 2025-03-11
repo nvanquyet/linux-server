@@ -27,7 +27,7 @@ struct Session {
     bool isLogin;
     char* IPAddress;
     
-    // Function pointers
+
     bool (*isConnected)(Session* self);
     void (*setHandler)(Session* self, Controller* handler);
     void (*setService)(Session* self, Service* service);
@@ -43,7 +43,6 @@ struct Session {
     Message* (*readMessage)(Session* self);
     void (*closeMessage)(Session* self);
     
-    // Opaque pointer for private implementation details
     void* _private;
     void* _key;
 };
@@ -53,5 +52,16 @@ void destroySession(Session* session);
 void session_set_handler(Session* session, Controller* handler);
 void session_set_service(Session* session, Service* service);
 void session_send_message(Session* session, Message* message);
+void session_close(Session* session);
+void session_login(Session* session, Message* message);
+void session_register(Session* session, Message* message);
+void session_client_ok(Session* session);
+bool session_do_send_message(Session* session, Message* message);
+void session_disconnect(Session* session);
+void session_on_message(Session* session, Message* message);
+void session_process_message(Session* session, Message* message);
+Message* session_read_message(Session* session);
+void session_close_message(Session* session);
+
 
 #endif

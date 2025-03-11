@@ -47,7 +47,6 @@ void controller_set_service(Controller* controller, Service* service){
 void controller_set_user(Controller* controller, User* user){
     if(controller != NULL){
         controller->user = user;
-        log_message(INFO, "Client %d: logged in successfully", controller->client->id);
     }
 }
 
@@ -64,7 +63,7 @@ void controller_on_message(Controller* self, Message* message){
         self->client->login(self->client, message);
         break;
     case REGISTER:
-        log_message(INFO, "Client %d: register", self->client->id);
+        self->client->clientRegister(self->client, message);
         break;
     case LOGOUT:
         log_message(INFO, "Client %d: logout", self->client->id);

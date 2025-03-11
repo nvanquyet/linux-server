@@ -6,6 +6,14 @@
 #include "config.h"
 
 void log_message(LogLevel level, const char* format, ...) {
+    Config *config = config_get_instance();
+    if (!config) {
+        return;
+    }
+
+    if (!config->show_log && level == DEBUG) {
+        return;
+    }
     time_t current_time;
     struct tm* time_info;
     char time_string[20];

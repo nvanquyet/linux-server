@@ -2,7 +2,13 @@
 #include "session.h"
 #include "log.h"
 #include <stdlib.h>
+#include "cmd.h"
+#include "message.h"
 
+
+
+void service_login_success(Service* service);
+void service_server_message(Session* session, char *content);
 
 Service* createService(Session* session) {
     if (session == NULL) {
@@ -15,6 +21,8 @@ Service* createService(Session* session) {
     }
     
     service->session = session;
+    service->login_success = service_login_success;
+    service->server_message = service_server_message;
     return service;
 }
 
@@ -37,4 +45,20 @@ void service_login_success(Service* service) {
     }
     
     log_message(INFO, "Client %d: Login success", session->id);
+}
+
+void service_server_message(Session* session, char *content) {
+    if (session == NULL || content == NULL) {
+        return;
+    }
+
+    Message *msg = message_create(SERVER_MESSAGE);
+    if (msg == NULL) {
+        log_message(ERROR, "Failed to create message");
+        return;
+    }
+
+    message_write_string(msg, content);
+    session_send_message(session, msg);
+    log_message(DEBUG, "Server message sent: %s", content);
 }
