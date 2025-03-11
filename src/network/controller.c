@@ -6,6 +6,7 @@
 #include "log.h"
 #include "cmd.h"
 #include <stdlib.h>
+#include "server_manager.h"
 
 
 void controller_on_message(Controller* self, Message* message);
@@ -15,6 +16,9 @@ void controller_on_connect_ok(Controller* self);
 void controller_message_in_chat(Controller* self, Message* ms);
 void controller_message_not_in_chat(Controller* self, Message* ms);
 void controller_new_message(Controller* self, Message* ms);
+
+
+void get_online_users(Session* session);
 
 Controller* createController(Session* client){
     Controller* controller = (Controller*)malloc(sizeof(Controller));
@@ -68,10 +72,9 @@ void controller_on_message(Controller* self, Message* message){
     case LOGOUT:
         log_message(INFO, "Client %d: logout", self->client->id);
         break;
-    case GET_SESSION_ID:
-        log_message(INFO, "Client %d: get session id", self->client->id);
+    case GET_ONLINE_USERS:
+        get_online_users(self->client);
         break;
-    
     default:
         log_message(ERROR, "Client %d: unknown command %d", self->client->id, command);
         break;
@@ -120,4 +123,28 @@ void controller_new_message(Controller* self, Message* ms){
     log_message(INFO, "Client %d: new message", self->client->id);
 }
 
+void get_online_users(Session* session){
+    ServerManager *manager = server_manager_get_instance();
+    if(manager == NULL){
+        return;
+    }
+    if(session == NULL){
+        return;
+    }
 
+    User *users[MAX_USERS];
+    int count = 0;
+    server_manager_get_users(users, &count);
+
+    Message *msg = message_create(GET_ONLINE_USERS);
+    if(msg == NULL){
+        log_message(ERROR, "Failed to create message");
+        return;
+    }
+    message_write_int(msg, count);
+    for(int i = 0; i < count; i++){
+        message_write_string(msg, users[i]->username);
+    }
+
+    session_send_message(session, msg);
+}

@@ -111,31 +111,50 @@ User *server_manager_find_user_by_id(int id)
     return NULL;
 }
 
-User *server_manager_find_user_by_username(const char *username)
-{
+User *server_manager_find_user_by_username_internal(const char *username, bool skipLock) {
     ServerManager *manager = server_manager_get_instance();
-    pthread_rwlock_rdlock(&manager->lock_user);
-    for (int i = 0; i < manager->user_count; i++)
-    {
-        if (strcmp(manager->users[i]->username, username) == 0)
-        {
-            pthread_rwlock_unlock(&manager->lock_user);
-            return manager->users[i];
+    
+    if (!skipLock) {
+        pthread_rwlock_rdlock(&manager->lock_user);
+    }
+    
+    User *found = NULL;
+    for (int i = 0; i < manager->user_count; i++) {
+        if (strcmp(manager->users[i]->username, username) == 0) {
+            found = manager->users[i];
+            break;
         }
     }
-    pthread_rwlock_unlock(&manager->lock_user);
-    return NULL;
+    
+    if (!skipLock) {
+        pthread_rwlock_unlock(&manager->lock_user);
+    }
+    
+    return found;
 }
 
-void server_manager_add_user(User *user)
-{
+User *server_manager_find_user_by_username(const char *username) {
+    return server_manager_find_user_by_username_internal(username, false);
+}
+
+void server_manager_add_user_internal(User *user, bool skipLock) {
     ServerManager *manager = server_manager_get_instance();
-    pthread_rwlock_wrlock(&manager->lock_user);
-    if (manager->user_count < MAX_USERS)
-    {
+    
+    if (!skipLock) {
+        pthread_rwlock_wrlock(&manager->lock_user);
+    }
+    
+    if (manager->user_count < MAX_USERS) {
         manager->users[manager->user_count++] = user;
     }
-    pthread_rwlock_unlock(&manager->lock_user);
+    
+    if (!skipLock) {
+        pthread_rwlock_unlock(&manager->lock_user);
+    }
+}
+
+void server_manager_add_user(User *user) {
+    server_manager_add_user_internal(user, false);
 }
 
 void server_manager_remove_user(User *user)

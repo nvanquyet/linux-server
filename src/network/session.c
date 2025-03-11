@@ -278,7 +278,6 @@ void session_close_message(Session *self)
     {
         return;
     }
-
     SessionPrivate *private = (SessionPrivate *)self->_private;
     if (!private || private->isClosed)
     {
@@ -289,6 +288,7 @@ void session_close_message(Session *self)
 
     if (self->IPAddress != NULL)
     {
+        log_message(INFO, "Removing IP address %s", self->IPAddress);
         server_manager_remove_ip(self->IPAddress);
     }
     else
@@ -392,18 +392,22 @@ void session_login(Session *self, Message *msg) {
     if (user != NULL) {
         user->login(user);
         if(user->isLoaded){
+            log_message(INFO, "Login success: %s", user->username);
             self->isLoginSuccess = true;
             self->user = user;
     
             if (self->handler != NULL) {
                 controller_set_user(self->handler, user);
                 controller_set_service(self->handler, self->service);
+                self->service->login_success(self->service);
             }
         } else {
             self->isLoginSuccess = false;
             self->isLogin = false;
             destroyUser(user);
         }
+    } else{
+        log_message(ERROR, "Login failed: %s", username);
     }
 
     self->isLogin = false;
@@ -639,7 +643,6 @@ Message *session_read_message(Session *session)
     uint8_t command;
     if (recv(session->socket, &command, sizeof(command), 0) <= 0)
     {
-        log_message(ERROR, "Failed to receive command, closing session");
         return NULL;
     }
     log_message(INFO, "Received command: %d", command);

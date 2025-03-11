@@ -31,6 +31,8 @@ void server_manager_add_ip(const char *ip);
 void server_manager_remove_ip(const char *ip);
 void server_manager_lock();
 void server_manager_unlock();
+User *server_manager_find_user_by_username_internal(const char *username, bool skipLock);
+void server_manager_add_user_internal(User *user, bool skipLock);
 
 void init_server_manager();
 void destroy_server_manager();

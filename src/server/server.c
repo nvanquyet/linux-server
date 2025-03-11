@@ -103,7 +103,7 @@ void server_start()
         inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
 
         int connection_count = server_manager_frequency(client_ip);
-        log_message(INFO, "IP: %s connection number: %d connected", client_ip, connection_count);
+        log_message(INFO, "IP: %s connection number: %d connected", client_ip, connection_count + 1);
 
         if (connection_count >= config_get_ip_address_limit())
         {

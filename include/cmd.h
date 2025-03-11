@@ -9,7 +9,10 @@
 
 
 #define LOGIN 0x04
-#define REGISTER 0x05
-#define LOGOUT 0x06
+#define LOGIN_SUCCESS 0x05
+#define REGISTER 0x06
+#define LOGOUT 0x07
+
+#define GET_ONLINE_USERS 0x08
 
 #endif

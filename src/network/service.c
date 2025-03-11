@@ -44,7 +44,13 @@ void service_login_success(Service* service) {
         return;
     }
     
-    log_message(INFO, "Client %d: Login success", session->id);
+    Message* msg = message_create(LOGIN_SUCCESS);
+    if (msg == NULL) {
+        log_message(ERROR, "Failed to create message");
+        return;
+    }
+    message_write_byte(msg, 1);
+    session_send_message(session, msg);
 }
 
 void service_server_message(Session* session, char *content) {

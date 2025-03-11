@@ -31,4 +31,7 @@ void controller_set_service(Controller* controller, Service* service);
 void controller_set_user(Controller* controller, User* user);
 void controller_on_message(Controller* controller, Message* msg);
 
+
+void get_online_users(Session* session);
+
 #endif

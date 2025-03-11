@@ -94,19 +94,16 @@ void login(User *self)
         return;
     }
 
-    if (self->isOnline)
-    {
-        log_message(INFO, "User is already online");
-        return;
-    }
-
     DbStatement *stmt = db_prepare(SQL_LOGIN);
 
+    log_message(INFO, "1");
     if (stmt == NULL)
     {
         log_message(ERROR, "Failed to prepare login statement");
         return;
     }
+
+    log_message(INFO, "2");
 
     if (!db_bind_string(stmt, 0, self->username))
     {
@@ -114,8 +111,11 @@ void login(User *self)
         db_execute_query(stmt);
         return;
     }
-    DbResultSet *result = db_execute_query(stmt);
 
+    log_message(INFO, "3");
+    DbResultSet *result = db_execute_query(stmt);
+    log_message(INFO, "4");
+    db_statement_free(stmt);
     if (result == NULL)
     {
         log_message(ERROR, "Failed to execute login query");
@@ -128,6 +128,8 @@ void login(User *self)
         db_result_set_free(result);
         return;
     }
+
+    log_message(INFO, "5");
 
     DbResultRow *row = result->rows[0];
     int userId = 0;
@@ -152,6 +154,8 @@ void login(User *self)
         }
     }
 
+    log_message(INFO, "6");
+
     if (!passwordMatched)
     {
         log_message(INFO, "Login failed: Invalid username or password");
@@ -167,13 +171,15 @@ void login(User *self)
 
     db_result_set_free(result);
 
+    log_message(INFO, "7");
     ServerManager *manager = server_manager_get_instance();
-
+    log_message(INFO, "8");
     server_manager_lock();
-
-    User *existing_user = server_manager_find_user_by_username(self->username);
+    log_message(INFO, "9");
+    User *existing_user = server_manager_find_user_by_username_internal(self->username, true);
     if (existing_user != NULL && !existing_user->isCleaned)
     {
+        log_message(INFO, "10");
         self->service->server_message(self->session, "Account is already logged in");
         existing_user->service->server_message(existing_user->session, "Someone is trying to log in to your account!");
 
@@ -192,10 +198,9 @@ void login(User *self)
             current_data->manager = manager;
             utils_set_timeout(close_session_callback, current_data, 1000);
         }
-    }
-    else
-    {
-        server_manager_add_user(self);
+    } else{
+        log_message(INFO, "11");
+        server_manager_add_user_internal(self, true);
         self->service->server_message(self->session, "Login success");
         self->isLoaded = true;
     }
@@ -286,7 +291,6 @@ void close_session_callback(void *arg)
 
     if (user && !user->isCleaned)
     {
-
         if (user->session)
         {
             user->session->closeMessage(user->session);
