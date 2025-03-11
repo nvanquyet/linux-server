@@ -9,11 +9,18 @@
 #include "message.h"
 #include <string.h>
 #include "m_utils.h"
+#include "server_manager.h"
 
 void login(User *self);
 void logout(User *self);
 void userRegister(User *self);
-DbResultSet *get_user_data_map(User *self);
+void close_session_callback(void *arg);
+
+typedef struct
+{
+    User *user;
+    ServerManager *manager;
+} CloseSessionData;
 
 User *createUser(User *self, Session *client, char *username, char *password)
 {
@@ -38,7 +45,7 @@ User *createUser(User *self, Session *client, char *username, char *password)
     self->login = login;
     self->logout = logout;
     self->userRegister = userRegister;
-    self->isCleaned = NULL;
+    self->isCleaned = false;
     self->isLoaded = false;
 
     return self;
@@ -81,7 +88,8 @@ void user_set_service(User *user, Service *service)
 
 void login(User *self)
 {
-    if(!validate_username_password(self->username, self->password)){
+    if (!validate_username_password(self->username, self->password))
+    {
         self->service->server_message(self->session, "Invalid username or password");
         return;
     }
@@ -93,7 +101,7 @@ void login(User *self)
     }
 
     DbStatement *stmt = db_prepare(SQL_LOGIN);
-    // diagnose_statement(stmt);
+
     if (stmt == NULL)
     {
         log_message(ERROR, "Failed to prepare login statement");
@@ -144,7 +152,7 @@ void login(User *self)
         }
     }
 
-    if (userId == 0 || !passwordMatched)
+    if (!passwordMatched)
     {
         log_message(INFO, "Login failed: Invalid username or password");
         db_result_set_free(result);
@@ -155,20 +163,44 @@ void login(User *self)
     self->isOnline = true;
     time_t now = time(NULL);
     self->lastLogin = (long)now;
+    self->isCleaned = false;
 
     db_result_set_free(result);
 
-    
-    DbStatement *updateQuery = db_prepare(SQL_UPDATE_USER_LOGIN);
-    if (!updateQuery)
-    {
-        log_message(ERROR, "Failed to prepare update query");
-        return;
-    }
-    service_server_message(self->session, "Login success");
-    self->isLoaded = true;
-}
+    ServerManager *manager = server_manager_get_instance();
 
+    server_manager_lock();
+
+    User *existing_user = server_manager_find_user_by_username(self->username);
+    if (existing_user != NULL && !existing_user->isCleaned)
+    {
+        self->service->server_message(self->session, "Account is already logged in");
+        existing_user->service->server_message(existing_user->session, "Someone is trying to log in to your account!");
+
+        CloseSessionData *existing_data = malloc(sizeof(CloseSessionData));
+        if (existing_data)
+        {
+            existing_data->user = existing_user;
+            existing_data->manager = manager;
+            utils_set_timeout(close_session_callback, existing_data, 1000);
+        }
+
+        CloseSessionData *current_data = malloc(sizeof(CloseSessionData));
+        if (current_data)
+        {
+            current_data->user = self;
+            current_data->manager = manager;
+            utils_set_timeout(close_session_callback, current_data, 1000);
+        }
+    }
+    else
+    {
+        server_manager_add_user(self);
+        self->service->server_message(self->session, "Login success");
+        self->isLoaded = true;
+    }
+    server_manager_unlock();
+}
 
 void logout(User *self)
 {
@@ -179,7 +211,8 @@ void userRegister(User *self)
 {
     self->isOnline = false;
 
-    if(!validate_username_password(self->username, self->password)){
+    if (!validate_username_password(self->username, self->password))
+    {
         self->service->server_message(self->session, "Invalid username or password");
         return;
     }
@@ -197,10 +230,10 @@ void userRegister(User *self)
         db_statement_free(check_stmt);
         return;
     }
-    
+
     DbResultSet *result = db_execute_query(check_stmt);
     db_statement_free(check_stmt);
-    
+
     if (result)
     {
         if (result->row_count > 0)
@@ -225,7 +258,7 @@ void userRegister(User *self)
         db_statement_free(reg_stmt);
         return;
     }
-    
+
     if (!db_bind_string(reg_stmt, 1, self->password))
     {
         log_message(ERROR, "Failed to bind password");
@@ -243,4 +276,23 @@ void userRegister(User *self)
         log_message(ERROR, "Failed to register user");
         self->service->server_message(self->session, "Registration failed");
     }
+}
+
+void close_session_callback(void *arg)
+{
+    CloseSessionData *data = (CloseSessionData *)arg;
+    User *user = data->user;
+    ServerManager *manager = data->manager;
+
+    if (user && !user->isCleaned)
+    {
+
+        if (user->session)
+        {
+            user->session->closeMessage(user->session);
+        }
+        server_manager_remove_user(user);
+        user->isCleaned = true;
+    }
+    free(data);
 }

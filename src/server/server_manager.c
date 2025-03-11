@@ -214,3 +214,13 @@ void destroy_server_manager()
     pthread_rwlock_destroy(&server_manager.lock_session);
     server_manager.initialized = false;
 }
+
+void server_manager_lock() {
+    ServerManager *manager = server_manager_get_instance();
+    pthread_rwlock_wrlock(&manager->lock_user);
+}
+
+void server_manager_unlock() {
+    ServerManager *manager = server_manager_get_instance();
+    pthread_rwlock_unlock(&manager->lock_user);
+}

@@ -3,6 +3,17 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <pthread.h>
+
+typedef void (*TimeoutCallback)(void* data);
+
+typedef struct {
+    TimeoutCallback callback;
+    void* data;
+    int milliseconds;
+} TimeoutData;
+
+void utils_set_timeout(TimeoutCallback callback, void* data, int milliseconds);
 
 bool is_port_available(int port);
 int utils_next_int(int max);

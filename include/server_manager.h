@@ -15,6 +15,7 @@ typedef struct {
     pthread_rwlock_t lock_user;
     pthread_rwlock_t lock_session;
     bool initialized;
+    
 } ServerManager;
 
 ServerManager *server_manager_get_instance();
@@ -28,6 +29,8 @@ void server_manager_add_user(User *user);
 void server_manager_remove_user(User *user);
 void server_manager_add_ip(const char *ip);
 void server_manager_remove_ip(const char *ip);
+void server_manager_lock();
+void server_manager_unlock();
 
 void init_server_manager();
 void destroy_server_manager();

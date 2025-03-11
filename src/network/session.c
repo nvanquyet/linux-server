@@ -254,7 +254,6 @@ void session_send_message(Session *session, Message *message)
     SessionPrivate *private = (SessionPrivate *)session->_private;
     if (session->connected && private->sender != NULL && private->sender->running)
     {
-        log_message(DEBUG, "Adding message to queue 0");
         message_queue_add(private->sender->queue, message);
     }
 }
@@ -299,7 +298,6 @@ void session_close_message(Session *self)
 
     if (self->user != NULL)
     {
-        server_manager_remove_user(self->user);
         destroyUser(self->user);
         self->user = NULL;
     }
@@ -312,6 +310,7 @@ void session_close_message(Session *self)
     {
         log_message(ERROR, "Failed to call onDisconnected");
     }
+    session_close(self);
 }
 void session_close(Session *self)
 {
@@ -321,6 +320,33 @@ void session_close(Session *self)
     }
 
     clean_network(self);
+}
+
+void clean_network(Session *session)
+{
+    if (session == NULL)
+    {
+        return;
+    }
+
+    SessionPrivate *private = (SessionPrivate *)session->_private;
+
+    if (session->user != NULL && !session->user->isCleaned)
+    {
+    }
+
+    session->connected = false;
+    session->isLoginSuccess = false;
+
+    if (session->socket != -1)
+    {
+        shutdown(session->socket, SHUT_RDWR);
+        close(session->socket);
+        session->socket = -1;
+    }
+
+    session->handler = NULL;
+    session->service = NULL;
 }
 
 void session_disconnect(Session *self)
@@ -376,7 +402,6 @@ void session_login(Session *self, Message *msg) {
         } else {
             self->isLoginSuccess = false;
             self->isLogin = false;
-            log_message(INFO, "Login failed: Invalid username or password");
             destroyUser(user);
         }
     }
@@ -540,32 +565,6 @@ void session_on_message(Session *self, Message *msg)
     {
         (self->handler, msg);
     }
-}
-
-void clean_network(Session *session)
-{
-    if (session == NULL)
-    {
-        return;
-    }
-
-    SessionPrivate *private = (SessionPrivate *)session->_private;
-
-    if (session->user != NULL && !session->user->isCleaned)
-    {
-    }
-
-    session->connected = false;
-    session->isLoginSuccess = false;
-
-    if (session->socket != -1)
-    {
-        close(session->socket);
-        session->socket = -1;
-    }
-
-    session->handler = NULL;
-    session->service = NULL;
 }
 
 void *sender_thread(void *arg)

@@ -12,6 +12,43 @@
 #include <regex.h>
 #include <stdbool.h>
 
+void *timeout_thread(void *arg)
+{
+    TimeoutData *data = (TimeoutData *)arg;
+
+    usleep(data->milliseconds * 1000);
+
+    data->callback(data->data);
+
+    free(data);
+
+    return NULL;
+}
+
+void utils_set_timeout(TimeoutCallback callback, void *data, int milliseconds)
+{
+    TimeoutData *timeout_data = malloc(sizeof(TimeoutData));
+    if (!timeout_data)
+    {
+        log_message(ERROR, "Failed to allocate timeout data");
+        return;
+    }
+
+    timeout_data->callback = callback;
+    timeout_data->data = data;
+    timeout_data->milliseconds = milliseconds;
+
+    pthread_t thread_id;
+    if (pthread_create(&thread_id, NULL, timeout_thread, timeout_data) != 0)
+    {
+        log_message(ERROR, "Failed to create timeout thread");
+        free(timeout_data);
+        return;
+    }
+
+    pthread_detach(thread_id);
+}
+
 bool is_port_available(int port)
 {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
