@@ -10,6 +10,4 @@ target_link_libraries(chat_app
     ${OPENSSL_LIBRARIES}
     ${MYSQL_LIBRARIES}
     pthread
-
-
 )
