@@ -1,37 +1,14 @@
-version: '3.8'
-
 services:
   chat_server:
     build: .
     container_name: chat_server
     ports:
       - "1609:1609"
-    depends_on:
-      - mysql
-    environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=12332145
-      - MYSQL_DATABASE=linux
-    networks:
-      - chat_network
-
-  mysql:
-    image: mysql:8.0
-    container_name: mysql8
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: 12332145
-      MYSQL_DATABASE: linux
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
     networks:
-      - chat_network
+      - shared-network
 
 networks:
-  chat_network:
+  shared-network:
+    external: true
 
-volumes:
-  mysql_data:
