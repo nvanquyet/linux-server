@@ -6,7 +6,6 @@
 #include "log.h"
 #include <stdlib.h>
 #include "db_statement.h"
-#include "message.h"
 #include <string.h>
 #include "m_utils.h"
 #include "server_manager.h"
@@ -307,4 +306,65 @@ void close_session_callback(void *arg)
         user->isCleaned = true;
     }
     free(data);
+}
+
+User *findUserById(int id) {
+    // Chuẩn bị statement với truy vấn SQL_GET_USER_BY_ID
+    DbStatement *stmt = db_prepare(SQL_GET_USER_BY_ID);
+    if (!stmt) {
+        log_message(ERROR, "Failed to prepare statement for finding user by id");
+        return NULL;
+    }
+
+    // Bind tham số ID vào vị trí 0 của câu lệnh
+    if (!db_bind_int(stmt, 0, id)) {
+        log_message(ERROR, "Failed to bind user id");
+        db_statement_free(stmt);
+        return NULL;
+    }
+
+    // Thực thi truy vấn và lấy kết quả
+    DbResultSet *result = db_execute_query(stmt);
+    db_statement_free(stmt);
+    if (!result || result->row_count == 0) {
+        log_message(INFO, "No user found with id: %d", id);
+        if (result) db_result_set_free(result);
+        return NULL;
+    }
+
+    // Lấy hàng đầu tiên trong kết quả
+    DbResultRow *row = result->rows[0];
+
+    // Cấp phát bộ nhớ cho đối tượng User
+    User *user = (User *)malloc(sizeof(User));
+    if (!user) {
+        log_message(ERROR, "Memory allocation failed for user");
+        db_result_set_free(result);
+        return NULL;
+    }
+
+    // Khởi tạo các trường cho User
+    memset(user, 0, sizeof(User));
+
+    // Duyệt qua các trường trong hàng để lấy dữ liệu
+    for (int i = 0; i < row->field_count; i++) {
+        DbResultField *field = row->fields[i];
+        if (field == NULL)
+            continue;
+
+        if (strcmp(field->key, "id") == 0) {
+            user->id = *(int *)field->value;
+        } else if (strcmp(field->key, "username") == 0) {
+            user->username = strdup((char *)field->value);
+        } else if (strcmp(field->key, "password") == 0) {
+            user->password = strdup((char *)field->value);
+        } else if (strcmp(field->key, "online") == 0) {
+            user->isOnline = (*(int *)field->value) != 0;
+        } else if (strcmp(field->key, "last_attendance_at") == 0) {
+            user->lastLogin = *(long *)field->value;
+        }
+    }
+
+    db_result_set_free(result);
+    return user;
 }

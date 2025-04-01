@@ -1,0 +1,5 @@
+/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug/src/CMakeFiles/chat_app.dir
+/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug/src/CMakeFiles/edit_cache.dir
+/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug/src/CMakeFiles/rebuild_cache.dir

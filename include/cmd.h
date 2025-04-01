@@ -15,4 +15,20 @@
 
 #define GET_ONLINE_USERS 0x08
 
+
+#define GET_JOINED_GROUPS 0x09
+
+#define CREATE_GROUP 0x0A
+#define JOIN_GROUP 0x0C
+
+#define LEAVE_GROUP 0x0E
+
+#define DELETE_GROUP 0x10
+
+#define SEND_MESSAGE 0x12
+#define RECEIVE_MESSAGE 0x13
+
+#define SEND_GROUP_MESSAGE 0x14
+#define RECEIVE_GROUP_MESSAGE 0x15
+
 #endif

@@ -17,7 +17,7 @@ Config *config_get_instance()
 
 bool config_load()
 {
-    FILE *config_file = fopen("../config.properties", "r");
+    FILE *config_file = fopen("../../config.properties", "r");
     if (config_file == NULL)
     {
         log_message(WARN, "Failed to load config file from '../config.properties'. Trying 'config.properties'...");

@@ -63,7 +63,6 @@ bool db_execute(DbStatement *stmt)
     }
 
     success = mysql_stmt_execute(stmt->stmt) == 0;
-
 cleanup:
 
     if (stmt->binds)
@@ -76,6 +75,32 @@ cleanup:
     db_manager_release_connection(stmt->conn);
     free(stmt);
 
+    return success;
+}
+bool db_execute_update(DbStatement *stmt) {
+    bool success = false;
+
+    if (!stmt || !stmt->stmt) {
+        return false;
+    }
+
+    if (stmt->binds && !stmt->is_bound) {
+        if (mysql_stmt_bind_param(stmt->stmt, stmt->binds) != 0) {
+            goto cleanup;
+        }
+        stmt->is_bound = true;
+    }
+
+    success = mysql_stmt_execute(stmt->stmt) == 0;
+
+    cleanup:
+        if (stmt->binds) {
+            free(stmt->binds);
+            stmt->binds = NULL;
+        }
+    mysql_stmt_close(stmt->stmt);
+    db_manager_release_connection(stmt->conn);
+    free(stmt);
     return success;
 }
 
@@ -468,36 +493,33 @@ cleanup_no_result:
     }
     return NULL;
 }
+void db_statement_free(DbStatement *stmt) {
+    if (!stmt) return;  // ✅ Kiểm tra NULL tránh lỗi
 
-void db_statement_free(DbStatement *stmt)
-{
-    if (!stmt) return;
-    
-    if (stmt->binds)
-    {
+    if (stmt->binds) {
         free(stmt->binds);
         stmt->binds = NULL;
     }
-    if (stmt->lengths)
-    {
+
+    if (stmt->lengths) {
         free(stmt->lengths);
         stmt->lengths = NULL;
     }
-    
-    if (stmt->stmt)
-    {
+
+    if (stmt->stmt) {
         mysql_stmt_close(stmt->stmt);
         stmt->stmt = NULL;
     }
-    
-    if (stmt->conn)
-    {
+
+    if (stmt->conn) {
         db_manager_release_connection(stmt->conn);
         stmt->conn = NULL;
     }
-    
+
     free(stmt);
+    stmt = NULL;  // ✅ Tránh truy cập sau khi giải phóng
 }
+
 
 void diagnose_statement(DbStatement *stmt)
 {
@@ -535,4 +557,140 @@ void diagnose_statement(DbStatement *stmt)
     {
         log_message(INFO, "  No binds allocated");
     }
+}
+
+bool db_bind_int(DbStatement *stmt, int index, int value) {
+    if (!stmt || !stmt->stmt || index < 0) {
+        log_message(ERROR, "Invalid statement or index for binding int");
+        return false;
+    }
+
+    unsigned long current_param_count = mysql_stmt_param_count(stmt->stmt);
+    if (index >= current_param_count) {
+        log_message(ERROR, "Parameter index %d out of bounds (max: %lu)", index, current_param_count - 1);
+        return false;
+    }
+
+    // Nếu mảng binds chưa được khởi tạo hoặc số tham số không khớp, cần khởi tạo lại
+    if (!stmt->binds || stmt->param_count != current_param_count) {
+        if (stmt->binds) {
+            free(stmt->binds);
+            stmt->binds = NULL;
+        }
+        if (stmt->lengths) {
+            free(stmt->lengths);
+            stmt->lengths = NULL;
+        }
+        stmt->param_count = current_param_count;
+        stmt->binds = calloc(stmt->param_count, sizeof(MYSQL_BIND));
+        if (!stmt->binds) {
+            log_message(ERROR, "Failed to allocate memory for parameter bindings");
+            return false;
+        }
+        stmt->lengths = calloc(stmt->param_count, sizeof(unsigned long));
+        if (!stmt->lengths) {
+            free(stmt->binds);
+            stmt->binds = NULL;
+            log_message(ERROR, "Failed to allocate memory for length values");
+            return false;
+        }
+        stmt->is_bound = false;
+    }
+
+    // Cấp phát bộ nhớ cho giá trị int (và lưu lại để dùng sau khi statement thực thi)
+    int *pValue = malloc(sizeof(int));
+    if (!pValue) {
+        log_message(ERROR, "Failed to allocate memory for int parameter at index %d", index);
+        return false;
+    }
+    *pValue = value;
+
+    memset(&stmt->binds[index], 0, sizeof(MYSQL_BIND));
+    stmt->binds[index].buffer_type = MYSQL_TYPE_LONG;
+    stmt->binds[index].buffer = pValue;
+    stmt->binds[index].buffer_length = sizeof(int);
+
+    unsigned long *len = malloc(sizeof(unsigned long));
+    if (!len) {
+        log_message(ERROR, "Failed to allocate memory for length at index %d", index);
+        free(pValue);
+        return false;
+    }
+    *len = sizeof(int);
+    stmt->binds[index].length = len;
+
+    stmt->binds[index].is_null = 0;
+
+    log_message(DEBUG, "Successfully bound int value %d at index %d", value, index);
+    return true;
+}
+
+bool db_bind_long(DbStatement *stmt, int index, long value) {
+    if (!stmt || !stmt->stmt || index < 0) {
+        log_message(ERROR, "Invalid statement or index for binding long");
+        return false;
+    }
+
+    unsigned long current_param_count = mysql_stmt_param_count(stmt->stmt);
+    if (index >= current_param_count) {
+        log_message(ERROR, "Parameter index %d out of bounds (max: %lu)", index, current_param_count - 1);
+        return false;
+    }
+
+    if (!stmt->binds || stmt->param_count != current_param_count) {
+        if (stmt->binds) {
+            free(stmt->binds);
+            stmt->binds = NULL;
+        }
+        if (stmt->lengths) {
+            free(stmt->lengths);
+            stmt->lengths = NULL;
+        }
+        stmt->param_count = current_param_count;
+        stmt->binds = calloc(stmt->param_count, sizeof(MYSQL_BIND));
+        if (!stmt->binds) {
+            log_message(ERROR, "Failed to allocate memory for parameter bindings");
+            return false;
+        }
+        stmt->lengths = calloc(stmt->param_count, sizeof(unsigned long));
+        if (!stmt->lengths) {
+            free(stmt->binds);
+            stmt->binds = NULL;
+            log_message(ERROR, "Failed to allocate memory for length values");
+            return false;
+        }
+        stmt->is_bound = false;
+    }
+
+    // Cấp phát bộ nhớ cho giá trị long
+    long *pValue = malloc(sizeof(long));
+    if (!pValue) {
+        log_message(ERROR, "Failed to allocate memory for long parameter at index %d", index);
+        return false;
+    }
+    *pValue = value;
+
+    memset(&stmt->binds[index], 0, sizeof(MYSQL_BIND));
+    stmt->binds[index].buffer_type = MYSQL_TYPE_LONGLONG;  // Sử dụng MYSQL_TYPE_LONGLONG cho giá trị long
+    stmt->binds[index].buffer = pValue;
+    stmt->binds[index].buffer_length = sizeof(long);
+
+    unsigned long *len = malloc(sizeof(unsigned long));
+    if (!len) {
+        log_message(ERROR, "Failed to allocate memory for length at index %d", index);
+        free(pValue);
+        return false;
+    }
+    *len = sizeof(long);
+    stmt->binds[index].length = len;
+
+    stmt->binds[index].is_null = 0;
+
+    log_message(DEBUG, "Successfully bound long value %ld at index %d", value, index);
+    return true;
+}
+int db_get_insert_id(DbStatement *stmt) {
+    if (!stmt || !stmt->stmt) return -1;
+    // mysql_stmt_insert_id trả về giá trị auto-generated ID
+    return (int)mysql_stmt_insert_id(stmt->stmt);
 }

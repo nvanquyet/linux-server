@@ -1,0 +1,5 @@
+/sbin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/opt/clion/bin/ninja/linux/x64/ninja -G Ninja -S /home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server -B /home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug
+-- Found MySQL: /usr/lib/libmysqlclient.so, /usr/include/mysql
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug

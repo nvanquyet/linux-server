@@ -4,8 +4,6 @@
 #include "session.h"
 #include "stdbool.h"
 #include "service.h"
-#include "database_connector.h"
-#include "stdatomic.h"
 
 typedef struct User User;
 typedef struct Session Session;
@@ -23,7 +21,7 @@ struct User
     long lastLogin;
     bool isLoaded;
     bool isCleaned;
-    atomic_bool messageSent;
+    bool messageSent;
 
     void (*login)(User *self);
     void (*logout)(User *self);
@@ -36,6 +34,7 @@ void destroyUser(User *user);
 void user_set_session(User *user, Session *session);
 void user_set_service(User *user, Service *service);
 void close_session_callback(void *arg);
+User *findUserById(int id);
 
 #endif
 
