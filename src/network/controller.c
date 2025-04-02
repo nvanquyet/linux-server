@@ -210,6 +210,10 @@ void get_joined_groups(Session* session, Message* msg){
                 message_write_int(message, -1);  // Không có chủ nhóm
                 message_write_string(message, "Unknown");  // Tên mặc định
             }
+            log_message(INFO, "Nhóm %d: %s, Created by %s (%d) at %ld",
+                groups[i]->id, groups[i]->name,
+                groups[i]->created_by ? groups[i]->created_by->username : "Unknown",
+                groups[i]->created_by ? groups[i]->created_by->id : -1, groups[i]->created_at);
             free(groups[i]);
         }
         free(groups);
@@ -266,10 +270,13 @@ void server_handle_join_group(Session* session, Message* msg) {
     msg->position = 0;
     int group_id = (int) message_read_int(msg);
     int user_id = (int) message_read_int(msg);
-
-    bool joined = add_group_member(group_id, user_id);
-
+    char *error_message = (char *)malloc(256);
+    bool joined = add_group_member(group_id, user_id, error_message);
     message_write_bool(message, joined);
+    if (!joined) {
+        message_write_string(message, error_message);
+        log_message(INFO, "User %d was member of group %d", user_id, group_id);
+    }
     session_send_message(session, message);
 }
 
@@ -287,8 +294,13 @@ void server_handle_leave_group(Session* session, Message* msg) {
     msg->position = 0;
     int group_id = (int) message_read_int(msg);
     int user_id = (int) message_read_int(msg);
-    bool result = remove_group_member(group_id, user_id);
+    char *error_message = (char *)malloc(256);
+    bool result = remove_group_member(group_id, user_id, error_message);
     message_write_bool(message, result);
+    if (!result) {
+        message_write_string(message, error_message);
+        log_message(INFO, "User %d isn't member of group %d", user_id, group_id);
+    }
     session_send_message(session, message);
 }
 

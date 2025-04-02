@@ -35,6 +35,7 @@ typedef struct
 typedef struct
 {
     DbResultRow **rows;
+    int current_row;
     int row_count;
     int capacity;
 } DbResultSet;

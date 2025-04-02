@@ -6,7 +6,7 @@
 #define SQL_LOGIN "SELECT * FROM users WHERE username=?"
 #define SQL_UPDATE_USER_LOGIN "UPDATE users SET online=?, last_attendance_at=? WHERE id=? LIMIT 1"
 #define SQL_UPDATE_USER_LOGOUT "UPDATE users SET online=? WHERE id=? LIMIT 1"
-#define SQL_GET_USER_BY_ID "SELECT id, username, password, online, last_attendance_at FROM users WHERE id=?"
+#define SQL_GET_USER_BY_ID "SELECT * FROM users WHERE id=?"
 
 
 // 📌 Group Queries
@@ -21,6 +21,7 @@
 #define SQL_GET_GROUP_MEMBERS "SELECT * FROM group_members WHERE group_id=?"
 #define SQL_GET_GROUPS_BY_USER "SELECT g.group_id, g.group_name, g.created_at, g.created_by FROM groups g JOIN group_members gm ON g.group_id = gm.group_id WHERE gm.user_id=? ORDER BY g.created_at DESC"
 #define SQL_UPDATE_MEMBER_ROLE "UPDATE group_members SET role=? WHERE group_id=? AND user_id=?"
+#define SQL_CHECK_MEMBER_EXISTENCE "SELECT COUNT(*) FROM group_members WHERE group_id = ? AND user_id = ?"
 
 // 📌 Message Queries
 #define SQL_ADD_MESSAGE "INSERT INTO messages (message_id, sender_id, receiver_id, content, created_at, group_id) VALUES (?, ?, ?, ?, ?, ?)"

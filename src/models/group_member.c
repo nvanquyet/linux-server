@@ -10,79 +10,74 @@
 
 #include "group.h"
 
-bool add_group_member(int group_id, int user_id) {
+bool add_group_member(int group_id, int user_id, char *error_message) {
+    // Kiểm tra xem thành viên đã tồn tại trong nhóm chưa
+    if (check_member_exists(group_id, user_id)) {
+        if (error_message != NULL) {
+            snprintf(error_message, ERROR_MESSAGE_SIZE, "User %d is already a member of group %d", user_id, group_id);
+        }
+        log_message(ERROR, "%s", error_message);
+        return false;
+    }
+
+    // Tiến hành thêm thành viên vào nhóm như bình thường
     DbStatement *stmt = db_prepare(SQL_ADD_GROUP_MEMBER);
     if (!stmt) {
-        log_message(ERROR, "Failed to prepare statement for adding group member");
+        snprintf(error_message, ERROR_MESSAGE_SIZE, "Failed to prepare statement for adding group member");
+        log_message(ERROR, "%s", error_message);
         return false;
     }
 
-    // Bind group_id vào tham số thứ 0
-    if (!db_bind_int(stmt, 0, group_id)) {
-        log_message(ERROR, "Failed to bind group_id parameter");
+    if (!db_bind_int(stmt, 0, group_id) || !db_bind_int(stmt, 1, user_id) ||
+        !db_bind_long(stmt, 2, (long)time(NULL)) || !db_bind_int(stmt, 3, 0)) {
+        snprintf(error_message, ERROR_MESSAGE_SIZE, "Failed to bind parameters");
+        log_message(ERROR, "%s", error_message);
         db_statement_free(stmt);
         return false;
-    }
-    // Bind user_id vào tham số thứ 1
-    if (!db_bind_int(stmt, 1, user_id)) {
-        log_message(ERROR, "Failed to bind user_id parameter");
-        db_statement_free(stmt);
-        return false;
-    }
-    // Bind joined_at (thời gian hiện tại)
-    long joined_at = (long)time(NULL);
-    if (!db_bind_long(stmt, 2, joined_at)) {
-        log_message(ERROR, "Failed to bind joined_at parameter");
-        db_statement_free(stmt);
-        return false;
-    }
-    int role = 0;
-    if (!db_bind_int(stmt, 3, role)) {
-        log_message(ERROR, "Failed to bind role parameter");
-        db_statement_free(stmt);
-        return false;
-    }
+        }
 
-    // Thực thi câu lệnh INSERT
-    if (!db_execute_update(stmt)) {
-        log_message(ERROR, "Failed to execute query to add group member");
+    if (!db_execute(stmt)) {
+        snprintf(error_message, ERROR_MESSAGE_SIZE, "Failed to execute query to add group member");
+        log_message(ERROR, "%s", error_message);
         db_statement_free(stmt);
         return false;
     }
-
+    stmt = NULL;
     db_statement_free(stmt);
     log_message(INFO, "Successfully added user %d to group %d", user_id, group_id);
     return true;
 }
 
-bool remove_group_member(int group_id, int user_id) {
-    // Chuẩn bị câu lệnh DELETE cho bảng group_members
+bool remove_group_member(int group_id, int user_id, char *error_message) {
+    // Kiểm tra xem thành viên có tồn tại trong nhóm không
+    if (!check_member_exists(group_id, user_id)) {
+        if (error_message != NULL) {
+            snprintf(error_message, ERROR_MESSAGE_SIZE, "User %d is not a member of group %d", user_id, group_id);
+        }
+        log_message(ERROR, "%s", error_message);
+        return false;
+    }
+    log_message(INFO, "Removing...");
     DbStatement *stmt = db_prepare(SQL_REMOVE_GROUP_MEMBER);
     if (!stmt) {
-        log_message(ERROR, "Failed to prepare statement for removing group member");
+        snprintf(error_message, ERROR_MESSAGE_SIZE, "Failed to prepare statement for removing group member");
+        log_message(ERROR, "%s", error_message);
         return false;
     }
 
-    // Bind group_id vào tham số thứ 0
-    if (!db_bind_int(stmt, 0, group_id)) {
-        log_message(ERROR, "Failed to bind group_id parameter");
-        db_statement_free(stmt);
-        return false;
-    }
-    // Bind user_id vào tham số thứ 1
-    if (!db_bind_int(stmt, 1, user_id)) {
-        log_message(ERROR, "Failed to bind user_id parameter");
+    if (!db_bind_int(stmt, 0, group_id) || !db_bind_int(stmt, 1, user_id)) {
+        snprintf(error_message, ERROR_MESSAGE_SIZE, "Failed to bind parameters");
+        log_message(ERROR, "%s", error_message);
         db_statement_free(stmt);
         return false;
     }
 
-    // Thực thi câu lệnh DELETE
-    if (!db_execute_update(stmt)) {
-        log_message(ERROR, "Failed to execute query to remove group member");
+    if (!db_execute(stmt)) {
+        snprintf(error_message, ERROR_MESSAGE_SIZE, "Failed to execute query to remove group member");
+        log_message(ERROR, "%s", error_message);
         db_statement_free(stmt);
         return false;
     }
-
     db_statement_free(stmt);
     log_message(INFO, "Successfully removed user %d from group %d", user_id, group_id);
     return true;
@@ -160,4 +155,40 @@ Group **find_groups_by_user(int user_id, int *out_count) {
     db_result_set_free(result);
     log_message(INFO, "Retrieved %d groups for user %d", count, user_id);
     return group_array;
+}
+
+bool check_member_exists(int group_id, int user_id) {
+    log_message(INFO, "Executing query with group_id = %d, user_id = %d", group_id, user_id);
+    DbStatement *stmt = db_prepare(SQL_CHECK_MEMBER_EXISTENCE);
+    if (!stmt) {
+        log_message(ERROR, "Failed to prepare statement for checking member existence");
+        return false;
+    }
+
+    // Bind group_id vào tham số thứ 0
+    if (!db_bind_int(stmt, 0, group_id)) {
+        log_message(ERROR, "Failed to bind group_id parameter");
+        db_statement_free(stmt);
+        return false;
+    }
+
+    // Bind user_id vào tham số thứ 1
+    if (!db_bind_int(stmt, 1, user_id)) {
+        log_message(ERROR, "Failed to bind user_id parameter");
+        db_statement_free(stmt);
+        return false;
+    }
+
+    // Thực thi câu lệnh SELECT để kiểm tra số lượng bản ghi
+    int count = 0;
+    if (!db_return_execute(stmt, &count)) {
+        log_message(ERROR, "Failed to execute query to check member existence");
+        db_statement_free(stmt);
+        return false;
+    }
+    stmt = NULL;
+    db_statement_free(stmt);
+
+    // Nếu count > 0, thành viên đã tồn tại trong nhóm
+    return count > 0;
 }

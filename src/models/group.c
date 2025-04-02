@@ -66,10 +66,11 @@ bool create_group(Group *self, const char *group_name, User *creator) {
     db_statement_free(stmt);
 
     //Add to member
-    if (!add_group_member(self->id, creator->id)) {
+    if (!add_group_member(self->id, creator->id, "")) {
         log_message(ERROR, "Failed to add creator to group");
         return false;
     }
+    log_message(INFO, "Success to add creator to group");
     return true;
 }
 
@@ -102,7 +103,7 @@ bool delete_group(Group *self, User *user) {
         return false;
     }
 
-    if (!db_execute_update(stmt)) {
+    if (!db_execute(stmt)) {
         log_message(ERROR, "Failed to execute group deletion query");
         db_statement_free(stmt);
         return false;

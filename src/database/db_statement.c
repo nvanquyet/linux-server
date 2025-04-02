@@ -77,32 +77,6 @@ cleanup:
 
     return success;
 }
-bool db_execute_update(DbStatement *stmt) {
-    bool success = false;
-
-    if (!stmt || !stmt->stmt) {
-        return false;
-    }
-
-    if (stmt->binds && !stmt->is_bound) {
-        if (mysql_stmt_bind_param(stmt->stmt, stmt->binds) != 0) {
-            goto cleanup;
-        }
-        stmt->is_bound = true;
-    }
-
-    success = mysql_stmt_execute(stmt->stmt) == 0;
-
-    cleanup:
-        if (stmt->binds) {
-            free(stmt->binds);
-            stmt->binds = NULL;
-        }
-    mysql_stmt_close(stmt->stmt);
-    db_manager_release_connection(stmt->conn);
-    free(stmt);
-    return success;
-}
 
 bool db_bind_string(DbStatement *stmt, int index, const char *value)
 {
@@ -182,6 +156,71 @@ bool db_bind_string(DbStatement *stmt, int index, const char *value)
                 value, stmt->lengths[index], index);
     return true;
 }
+bool db_return_execute(DbStatement *stmt, int *result) {
+    if (!stmt || !result) {
+        log_message(ERROR, "Invalid statement or result pointer");
+        return false;
+    }
+
+    // Thực thi truy vấn và lấy kết quả
+    DbResultSet *result_set = db_execute_query(stmt);
+    if (!result_set) {
+        log_message(ERROR, "Failed to execute query");
+        return false;
+    }
+
+    // Kiểm tra nếu có ít nhất một dòng trong kết quả
+    if (!db_fetch_row(result_set)) {
+        log_message(ERROR, "Failed to fetch result row");
+        db_result_set_free(result_set);  // Giải phóng tài nguyên của result_set
+        return false;
+    }
+
+    // Lấy dữ liệu từ kết quả
+    if (!db_get_int(result_set, 0, result)) {
+        log_message(ERROR, "Failed to get result from query");
+        db_result_set_free(result_set);  // Giải phóng tài nguyên của result_set
+        return false;
+    }
+    db_result_set_free(result_set);
+    return true;
+}
+
+bool db_fetch_row(DbResultSet *result_set) {
+    if (!result_set) {
+        log_message(ERROR, "Invalid result set is NULL");
+        return false;
+    }
+
+    // Kiểm tra xem có dòng nào trong result_set để lấy không
+    if (result_set->current_row < result_set->row_count - 1) {
+        result_set->current_row++;  // Di chuyển đến dòng kế tiếp
+        return true;
+    }
+
+    // Nếu không còn dòng nào để lấy
+    log_message(ERROR, "No more rows in result set");
+    return false;
+}
+
+bool db_get_int(DbResultSet *result_set, int column_index, int *result) {
+    if (!result_set || !result) {
+        log_message(ERROR, "Invalid result set or result pointer");
+        return false;
+    }
+
+    // Kiểm tra chỉ số cột hợp lệ
+    if (column_index < 0 || column_index >= result_set->rows[result_set->current_row]->field_count) {
+        log_message(ERROR, "Invalid column index");
+        return false;
+    }
+
+    // Lấy giá trị từ cột tại column_index của dòng hiện tại
+    *result = *((int*)result_set->rows[result_set->current_row]->fields[column_index]->value);
+
+    return true;
+}
+
 
 DbResultSet *db_execute_query(DbStatement *stmt)
 {
