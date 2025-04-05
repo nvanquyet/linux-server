@@ -26,4 +26,6 @@ bool db_bind_long(DbStatement *stmt, int index, long value);
 int db_get_insert_id(DbStatement *stmt) ;
 bool db_fetch_row(DbResultSet *result_set, bool is_loop);
 bool db_get_int(DbResultSet *result_set, int column_index, int *result);
+DbResultRow* db_result_next_row(DbResultSet* result);
+DbResultField* db_result_get_field(DbResultRow* row, const char* key);
 #endif

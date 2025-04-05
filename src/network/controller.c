@@ -7,6 +7,7 @@
 #include "cmd.h"
 #include <stdlib.h>
 
+#include "db_message.h"
 #include "group.h"
 #include "group_member.h"
 #include "json_utils.h"
@@ -94,11 +95,14 @@ void controller_on_message(Controller* self, Message* message){
     case DELETE_GROUP:
         server_delete_group(self->client, message);
         break;
-    case SEND_MESSAGE:
+    case USER_MESSAGE:
         server_receive_message(self->client, message);
         break;
-    case SEND_GROUP_MESSAGE:
+    case GROUP_MESSAGE:
         server_receive_group_message(self->client, message);
+        break;
+    case GET_CHAT_HISTORY:
+        get_chat_history(self->client, message);
         break;
     default:
         log_message(ERROR, "Client %d: unknown command %d", self->client->id, command);
@@ -173,6 +177,7 @@ void get_online_users(Session* session){
 
     session_send_message(session, msg);
 }
+
 void get_joined_groups(Session* session, Message* msg){
     ServerManager *manager = server_manager_get_instance();
     if(manager == NULL){
@@ -318,33 +323,22 @@ void server_handle_leave_group(Session* session, Message* msg) {
 }
 
 void server_receive_message(Session* session, Message* msg) {
-    // ServerManager *manager = server_manager_get_instance();
-    // if (!manager || !session || !msg) {
-    //     return;
-    // }
-    //
-    // msg->position = 0;
-    // int sender_id = (int) message_read_int(msg);
-    // int group_id = (int) message_read_int(msg);
-    // char content[1024];
-    // if (!message_read_string(msg, content, sizeof(content))) {
-    //     log_message(ERROR, "Failed to read data");
-    //     return;
-    // }
-    //
-    // //bool sent = store_group_message(group_id, sender_id, content);
-    //
-    // Message *message = message_create(RECEIVE_GROUP_MESSAGE);
-    // if (!message) {
-    //     log_message(ERROR, "Failed to create message");
-    //     return;
-    // }
-    //
-    // //message_write_bool(message, sent);
-    // // if (sent) {
-    // //     message_write_int(message, group_id);
-    // // }
-    // session_send_message(session, message);
+    ServerManager *manager = server_manager_get_instance();
+    if (!manager || !session || !msg) {
+        return;
+    }
+    msg->position = 0;
+    int sender_id = (int) message_read_int(msg);
+    int receiver_id = (int) message_read_int(msg);
+    char content[1024];
+    if (!message_read_string(msg, content, sizeof(content))) {
+        log_message(ERROR, "Failed to read data");
+        return;
+    }
+    save_private_message(sender_id, receiver_id, content);
+    //send to other client
+    //session_send_message(session, msg);
+    session->service->direct_message(receiver_id, msg);
 }
 
 void server_delete_group(Session* session, Message* msg) {
@@ -386,30 +380,79 @@ void server_delete_group(Session* session, Message* msg) {
 }
 
 void server_receive_group_message(Session* session, Message* msg) {
-    // ServerManager *manager = server_manager_get_instance();
-    // if (!manager || !session || !msg) {
-    //     return;
-    // }
-    //
-    // msg->position = 0;
-    // int group_id = (int) message_read_int(msg);
-    // int message_count = 0;
-    // GroupMessage **messages = get_group_messages(group_id, &message_count);
-    //
-    // Message *response = message_create(GROUP_MESSAGE_HISTORY);
-    // if (!response) {
-    //     log_message(ERROR, "Failed to create message");
-    //     return;
-    // }
-    //
-    // message_write_int(response, message_count);
-    // for (int i = 0; i < message_count; i++) {
-    //     message_write_int(response, messages[i]->sender_id);
-    //     message_write_string(response, messages[i]->content);
-    //     message_write_long(response, messages[i]->timestamp);
-    //     free(messages[i]);
-    // }
-    // free(messages);
-    //
-    // session_send_message(session, response);
+    ServerManager *manager = server_manager_get_instance();
+    if (!manager || !session || !msg) {
+        return;
+    }
+    msg->position = 0;
+    int sender_id = (int) message_read_int(msg);
+    int group_id = (int) message_read_int(msg);
+    char content[1024];
+    if (!message_read_string(msg, content, sizeof(content))) {
+        log_message(ERROR, "Failed to read data");
+        return;
+    }
+    bool is_member = check_member_exists(group_id, sender_id);
+    log_message(INFO, "User %d is member of group %d", group_id, sender_id);
+    if (is_member) {
+        save_group_message(sender_id, group_id, content);
+        //session_send_message(session, msg);
+        //broadcast to all members of gtoups
+        int count = 0;
+        int* member_ids = get_group_members(group_id, &count);
+
+        if (!member_ids || count == 0) {
+            log_message(WARN, "Không tìm thấy thành viên nào trong group_id = %d", group_id);
+            return;
+        }
+        broadcast_message(member_ids, count, msg);
+        free(member_ids);
+    } else {
+        Message* mess = message_create(GROUP_MESSAGE);
+        mess->position = 0;
+        message_write_bool(mess, false);
+        message_write_string(mess, "You arent not member of group");
+        session_send_message(session, mess);
+    }
+}
+void get_chat_history(Session* session, Message* msg) {
+    ServerManager *manager = server_manager_get_instance();
+    if (manager == NULL || session == NULL || msg == NULL) return;
+
+    msg->position = 0;
+    int user_id = (int) message_read_int(msg);
+    int count = 0;
+
+    Message* message = message_create(GET_CHAT_HISTORY);
+    if (message == NULL) {
+        log_message(ERROR, "Failed to create message");
+        return;
+    }
+
+    ChatHistory* histories = get_chat_histories_by_user(user_id, &count);
+    if (!histories || count == 0) {
+        message_write_bool(message, false);
+    } else {
+        message_write_bool(message, true);
+        message_write_int(message, count);
+        for (int i = 0; i < count; i++) {
+            log_message(INFO, "INFO id: %d, chat with: %s, time: %ld, content: %s, sender_id: %d, sender_name: %s",
+                histories[i].id,
+                histories[i].chat_with,
+                histories[i].last_time,
+                histories[i].last_message,
+                histories[i].id,                // sender_id
+                histories[i].sender_name);      // sender_name
+
+            message_write_int(message, histories[i].id);            // chat_id
+            message_write_string(message, histories[i].chat_with);  // chat_with
+            message_write_long(message, histories[i].last_time);    // last_time
+            message_write_string(message, histories[i].last_message); // last_message
+            message_write_int(message, histories[i].id);            // sender_id
+            message_write_string(message, histories[i].sender_name); // sender_name
+        }
+        free(histories);
+    }
+
+    session_send_message(session, message);
 }

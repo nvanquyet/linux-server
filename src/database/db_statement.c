@@ -749,3 +749,23 @@ int db_get_insert_id(DbStatement *stmt) {
     // mysql_stmt_insert_id trả về giá trị auto-generated ID
     return (int)mysql_stmt_insert_id(stmt->stmt);
 }
+DbResultRow* db_result_next_row(DbResultSet* result) {
+    if (!result || result->current_row >= result->row_count) {
+        return NULL;
+    }
+
+    return result->rows[result->current_row++];
+}
+
+DbResultField* db_result_get_field(DbResultRow* row, const char* key) {
+    if (!row || !key) return NULL;
+
+    for (int i = 0; i < row->field_count; ++i) {
+        DbResultField* field = row->fields[i];
+        if (field && field->key && strcmp(field->key, key) == 0) {
+            return field;
+        }
+    }
+
+    return NULL;
+}

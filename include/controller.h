@@ -39,5 +39,6 @@ void server_handle_leave_group(Session* session, Message* msg);
 void server_delete_group(Session* session, Message* msg);
 void server_receive_message(Session* session, Message* msg);
 void server_receive_group_message(Session* session, Message* msg);
+void get_chat_history(Session* session, Message* msg);
 void server_create_group(Session* session, Message* msg);
 #endif

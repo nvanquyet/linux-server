@@ -24,10 +24,35 @@
 #define SQL_CHECK_MEMBER_EXISTENCE "SELECT COUNT(*) FROM group_members WHERE group_id = ? AND user_id = ?"
 
 // 📌 Message Queries
-#define SQL_ADD_MESSAGE "INSERT INTO messages (message_id, sender_id, receiver_id, content, created_at, group_id) VALUES (?, ?, ?, ?, ?, ?)"
-#define SQL_GET_MESSAGE "SELECT * FROM messages WHERE message_id=?"
-#define SQL_GET_GROUP_MESSAGES "SELECT * FROM messages WHERE group_id=? ORDER BY created_at ASC"
-#define SQL_GET_USER_MESSAGES "SELECT * FROM messages WHERE sender_id=? ORDER BY created_at DESC"
-#define SQL_DELETE_MESSAGE "DELETE FROM messages WHERE message_id=?"
+#define SQL_GET_CHAT_HISTORIES_BY_USER \
+"SELECT " \
+"  CASE " \
+"    WHEN group_id IS NOT NULL THEN -group_id " \
+"    WHEN sender_id = ? THEN receiver_id " \
+"    ELSE sender_id " \
+"  END AS chat_id, " \
+"  MAX(timestamp) AS last_time, " \
+"  SUBSTRING_INDEX(message_content, '\n', 1) AS last_message, " \
+"  sender_id, " \
+"  u.username AS sender_name " /* Thêm JOIN để lấy tên người gửi */ \
+"FROM messages m " \
+"LEFT JOIN users u ON u.id = m.sender_id " /* JOIN với bảng users để lấy tên người gửi */ \
+"WHERE sender_id = ? " \
+"   OR receiver_id = ? " \
+"   OR group_id IN (SELECT group_id FROM group_members WHERE user_id = ?) " \
+"GROUP BY chat_id " \
+"ORDER BY last_time DESC"
+
+
+
+// Gửi tin nhắn riêng
+#define SQL_INSERT_PRIVATE_MESSAGE \
+"INSERT INTO messages (sender_id, receiver_id, message_content, timestamp) " \
+"VALUES (?, ?, ?, ?)"
+
+// Gửi tin nhắn nhóm
+#define SQL_INSERT_GROUP_MESSAGE \
+"INSERT INTO messages (sender_id, group_id, message_content, timestamp) " \
+"VALUES (?, ?, ?, ?)"
 
 #endif // SQL_STATEMENT_H

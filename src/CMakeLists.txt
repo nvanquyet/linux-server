@@ -9,7 +9,9 @@ add_executable(chat_app ${SOURCES}
         ../include/json_utils.h
         network/json_utils.c
         ../include/group_member.h
-        models/group_member.c)
+        models/group_member.c
+        ../include/db_message.h
+        models/db_message.c)
 
 # Liên kết thư viện
 target_link_libraries(chat_app 

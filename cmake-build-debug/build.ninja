@@ -102,6 +102,14 @@ build src/CMakeFiles/chat_app.dir/main.c.o: C_COMPILER__chat_app_unscanned_Debug
   OBJECT_DIR = src/CMakeFiles/chat_app.dir
   OBJECT_FILE_DIR = src/CMakeFiles/chat_app.dir
 
+build src/CMakeFiles/chat_app.dir/models/db_message.c.o: C_COMPILER__chat_app_unscanned_Debug /home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/src/models/db_message.c || cmake_object_order_depends_target_chat_app
+  CONFIG = Debug
+  DEP_FILE = src/CMakeFiles/chat_app.dir/models/db_message.c.o.d
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  INCLUDES = -I/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/include -I/usr/include/mysql
+  OBJECT_DIR = src/CMakeFiles/chat_app.dir
+  OBJECT_FILE_DIR = src/CMakeFiles/chat_app.dir/models
+
 build src/CMakeFiles/chat_app.dir/models/group.c.o: C_COMPILER__chat_app_unscanned_Debug /home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/src/models/group.c || cmake_object_order_depends_target_chat_app
   CONFIG = Debug
   DEP_FILE = src/CMakeFiles/chat_app.dir/models/group.c.o.d
@@ -222,7 +230,7 @@ build src/CMakeFiles/chat_app.dir/utils/utils.c.o: C_COMPILER__chat_app_unscanne
 #############################################
 # Link the executable src/chat_app
 
-build src/chat_app: C_EXECUTABLE_LINKER__chat_app_Debug src/CMakeFiles/chat_app.dir/database/database_connector.c.o src/CMakeFiles/chat_app.dir/database/db_statement.c.o src/CMakeFiles/chat_app.dir/main.c.o src/CMakeFiles/chat_app.dir/models/group.c.o src/CMakeFiles/chat_app.dir/models/group_member.c.o src/CMakeFiles/chat_app.dir/models/user.c.o src/CMakeFiles/chat_app.dir/network/controller.c.o src/CMakeFiles/chat_app.dir/network/json_utils.c.o src/CMakeFiles/chat_app.dir/network/message.c.o src/CMakeFiles/chat_app.dir/network/service.c.o src/CMakeFiles/chat_app.dir/network/session.c.o src/CMakeFiles/chat_app.dir/server/server.c.o src/CMakeFiles/chat_app.dir/server/server_manager.c.o src/CMakeFiles/chat_app.dir/utils/aes_utils.c.o src/CMakeFiles/chat_app.dir/utils/config.c.o src/CMakeFiles/chat_app.dir/utils/log.c.o src/CMakeFiles/chat_app.dir/utils/utils.c.o | /usr/lib/libssl.so /usr/lib/libcrypto.so /usr/lib/libmysqlclient.so
+build src/chat_app: C_EXECUTABLE_LINKER__chat_app_Debug src/CMakeFiles/chat_app.dir/database/database_connector.c.o src/CMakeFiles/chat_app.dir/database/db_statement.c.o src/CMakeFiles/chat_app.dir/main.c.o src/CMakeFiles/chat_app.dir/models/db_message.c.o src/CMakeFiles/chat_app.dir/models/group.c.o src/CMakeFiles/chat_app.dir/models/group_member.c.o src/CMakeFiles/chat_app.dir/models/user.c.o src/CMakeFiles/chat_app.dir/network/controller.c.o src/CMakeFiles/chat_app.dir/network/json_utils.c.o src/CMakeFiles/chat_app.dir/network/message.c.o src/CMakeFiles/chat_app.dir/network/service.c.o src/CMakeFiles/chat_app.dir/network/session.c.o src/CMakeFiles/chat_app.dir/server/server.c.o src/CMakeFiles/chat_app.dir/server/server_manager.c.o src/CMakeFiles/chat_app.dir/utils/aes_utils.c.o src/CMakeFiles/chat_app.dir/utils/config.c.o src/CMakeFiles/chat_app.dir/utils/log.c.o src/CMakeFiles/chat_app.dir/utils/utils.c.o | /usr/lib/libssl.so /usr/lib/libcrypto.so /usr/lib/libmysqlclient.so
   CONFIG = Debug
   DEP_FILE = src/CMakeFiles/chat_app.dir/link.d
   FLAGS = -g

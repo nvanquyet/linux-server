@@ -1,4 +1,7 @@
 #include "service.h"
+
+#include <server_manager.h>
+
 #include "session.h"
 #include "log.h"
 #include <stdlib.h>
@@ -23,6 +26,8 @@ Service* createService(Session* session) {
     service->session = session;
     service->login_success = service_login_success;
     service->server_message = service_server_message;
+    service->broadcast_message = broadcast_message;
+    service->direct_message = direct_message;
     return service;
 }
 
@@ -67,4 +72,19 @@ void service_server_message(Session* session, char *content) {
     message_write_string(msg, content);
     session_send_message(session, msg);
     log_message(DEBUG, "Server message sent: %s", content);
+}
+void broadcast_message(int user_id[], int num_users, Message *msg) {
+    for (int i = 0; i < num_users; i++) {
+        User *user = server_manager_find_user_by_id(user_id[i]);
+        if (user != NULL && user->session != NULL) {
+            session_send_message(user->session, msg);
+        }
+    }
+}
+
+void direct_message(int user_id, Message* msg) {
+    User *user = server_manager_find_user_by_id(user_id);
+    if (user != NULL && user->session != NULL) {
+        session_send_message(user->session, msg);
+    }
 }

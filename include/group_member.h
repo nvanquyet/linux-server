@@ -12,4 +12,5 @@ bool add_group_member(int group_id, int user_id, char *error_message);
 bool remove_group_member(int group_id, int user_id, char *error_message);
 bool check_member_exists(int group_id, int user_id);
 Group **find_groups_by_user(int user_id, int *out_count);
+int* get_group_members(int group_id, int* out_count);
 #endif // GROUPMEMBER_H

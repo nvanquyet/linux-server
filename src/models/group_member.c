@@ -156,6 +156,70 @@ Group **find_groups_by_user(int user_id, int *out_count) {
     log_message(INFO, "Retrieved %d groups for user %d", count, user_id);
     return group_array;
 }
+int* get_group_members(int group_id, int* out_count) {
+    if (!out_count) {
+        log_message(ERROR, "Invalid output count pointer");
+        return NULL;
+    }
+    *out_count = 0;
+
+    DbStatement* stmt = db_prepare("SELECT user_id FROM group_members WHERE group_id = ?");
+    if (!stmt) {
+        log_message(ERROR, "Failed to prepare group members statement");
+        return NULL;
+    }
+
+    if (!db_bind_int(stmt, 1, group_id)) {
+        log_message(ERROR, "Failed to bind group_id parameter");
+        db_statement_free(stmt);
+        return NULL;
+    }
+
+    DbResultSet* result = db_execute_query(stmt);
+    db_statement_free(stmt);
+
+    if (!result) {
+        log_message(ERROR, "Failed to execute group members query");
+        return NULL;
+    }
+
+    int capacity = 16;
+    int* user_ids = malloc(capacity * sizeof(int));
+    if (!user_ids) {
+        log_message(ERROR, "Memory allocation failed for user_ids");
+        db_result_set_free(result);
+        return NULL;
+    }
+
+    int count = 0;
+    DbResultRow* row;
+
+    while ((row = db_result_next_row(result))) {
+        DbResultField* field = db_result_get_field(row, "user_id");
+        if (!field || !field->value) {
+            log_message(WARN, "Missing user_id field in row");
+            continue;
+        }
+
+        if (count >= capacity) {
+            capacity *= 2;
+            int* new_arr = realloc(user_ids, capacity * sizeof(int));
+            if (!new_arr) {
+                log_message(ERROR, "Failed to expand user_ids array");
+                free(user_ids);
+                db_result_set_free(result);
+                return NULL;
+            }
+            user_ids = new_arr;
+        }
+
+        user_ids[count++] = *(int*)field->value;
+    }
+
+    db_result_set_free(result);
+    *out_count = count;
+    return user_ids;
+}
 
 bool check_member_exists(int group_id, int user_id) {
     log_message(INFO, "Executing query with group_id = %d, user_id = %d", group_id, user_id);
