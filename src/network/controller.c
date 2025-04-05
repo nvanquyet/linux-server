@@ -295,11 +295,24 @@ void server_handle_leave_group(Session* session, Message* msg) {
     int group_id = (int) message_read_int(msg);
     int user_id = (int) message_read_int(msg);
     char *error_message = (char *)malloc(256);
-    bool result = remove_group_member(group_id, user_id, error_message);
-    message_write_bool(message, result);
-    if (!result) {
-        message_write_string(message, error_message);
-        log_message(INFO, "User %d isn't member of group %d", user_id, group_id);
+
+    Group *group = get_group(group_id);
+    if (!group) {
+        log_message(ERROR, "Failed to get group");
+        message_write_bool(message, false);
+    }else {
+        if (group->created_by->id == user_id) {
+            message_write_bool(message, false);
+            message_write_string(message, "U are creator cant leave group");
+            log_message(INFO, "User %d cant leave group %d", user_id, group_id);
+        }else {
+            bool result = remove_group_member(group_id, user_id, error_message);
+            message_write_bool(message, result);
+            if (!result) {
+                message_write_string(message, error_message);
+                log_message(INFO, "User %d isnt member of group %d", user_id, group_id);
+            }
+        }
     }
     session_send_message(session, message);
 }
@@ -354,14 +367,20 @@ void server_delete_group(Session* session, Message* msg) {
         log_message(ERROR, "Failed to get group");
         message_write_bool(message, false);
     }else {
-        User *user = findUserById(user_id);
-        if (!user) {
-            log_message(ERROR, "Failed to find user");
-            message_write_bool(message, false);
+        if (group->created_by->id == user_id) {
+            User *user = findUserById(user_id);
+            if (!user) {
+                log_message(ERROR, "Failed to find user");
+                message_write_bool(message, false);
+            }else {
+                bool deleted = delete_group(group, user);
+                message_write_bool(message, deleted);
+            }
         }else {
-            bool deleted = delete_group(group, user);
-            message_write_bool(message, deleted);
+            message_write_bool(message, false);
+            message_write_string(message, "You arent creator cant delete group");
         }
+
     }
     session_send_message(session, message);
 }

@@ -170,31 +170,32 @@ bool db_return_execute(DbStatement *stmt, int *result) {
     }
 
     // Kiểm tra nếu có ít nhất một dòng trong kết quả
-    if (!db_fetch_row(result_set)) {
+
+    if (!db_fetch_row(result_set, false)) {
         log_message(ERROR, "Failed to fetch result row");
         db_result_set_free(result_set);  // Giải phóng tài nguyên của result_set
         return false;
     }
-
     // Lấy dữ liệu từ kết quả
     if (!db_get_int(result_set, 0, result)) {
         log_message(ERROR, "Failed to get result from query");
         db_result_set_free(result_set);  // Giải phóng tài nguyên của result_set
         return false;
     }
+    result_set = NULL;
     db_result_set_free(result_set);
     return true;
 }
 
-bool db_fetch_row(DbResultSet *result_set) {
+bool db_fetch_row(DbResultSet *result_set, bool is_loop) {
     if (!result_set) {
         log_message(ERROR, "Invalid result set is NULL");
         return false;
     }
 
     // Kiểm tra xem có dòng nào trong result_set để lấy không
-    if (result_set->current_row < result_set->row_count - 1) {
-        result_set->current_row++;  // Di chuyển đến dòng kế tiếp
+    if (result_set->current_row < result_set->row_count) {
+        if (is_loop) result_set->current_row++;  // Di chuyển đến dòng kế tiếp
         return true;
     }
 
@@ -205,18 +206,33 @@ bool db_fetch_row(DbResultSet *result_set) {
 
 bool db_get_int(DbResultSet *result_set, int column_index, int *result) {
     if (!result_set || !result) {
-        log_message(ERROR, "Invalid result set or result pointer");
+        log_message(ERROR, "Invalid result set or output pointer");
         return false;
     }
 
-    // Kiểm tra chỉ số cột hợp lệ
-    if (column_index < 0 || column_index >= result_set->rows[result_set->current_row]->field_count) {
+    // Bảo vệ truy cập ngoài mảng
+    if (result_set->current_row < 0 || result_set->current_row >= result_set->row_count) {
+        log_message(ERROR, "Current row index is out of bounds");
+        return false;
+    }
+
+    DbResultRow *row = result_set->rows[result_set->current_row];
+
+    if (column_index < 0 || column_index >= row->field_count) {
         log_message(ERROR, "Invalid column index");
         return false;
     }
 
-    // Lấy giá trị từ cột tại column_index của dòng hiện tại
-    *result = *((int*)result_set->rows[result_set->current_row]->fields[column_index]->value);
+    DbResultField *field = row->fields[column_index];
+    if (!field || !field->value) {
+        log_message(ERROR, "Field value is NULL");
+        return false;
+    }
+
+    *result = *((int*)field->value);
+
+    free(field);
+    free(row);
 
     return true;
 }

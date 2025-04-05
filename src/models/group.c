@@ -109,6 +109,7 @@ bool delete_group(Group *self, User *user) {
         return false;
     }
 
+    stmt = NULL;
     db_statement_free(stmt);
     log_message(INFO, "Group '%s' (ID: %d) deleted successfully", self->name, self->id);
     return true;

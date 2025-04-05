@@ -57,7 +57,6 @@ bool remove_group_member(int group_id, int user_id, char *error_message) {
         log_message(ERROR, "%s", error_message);
         return false;
     }
-    log_message(INFO, "Removing...");
     DbStatement *stmt = db_prepare(SQL_REMOVE_GROUP_MEMBER);
     if (!stmt) {
         snprintf(error_message, ERROR_MESSAGE_SIZE, "Failed to prepare statement for removing group member");
@@ -78,6 +77,7 @@ bool remove_group_member(int group_id, int user_id, char *error_message) {
         db_statement_free(stmt);
         return false;
     }
+    stmt = NULL;
     db_statement_free(stmt);
     log_message(INFO, "Successfully removed user %d from group %d", user_id, group_id);
     return true;
@@ -188,7 +188,6 @@ bool check_member_exists(int group_id, int user_id) {
     }
     stmt = NULL;
     db_statement_free(stmt);
-
     // Nếu count > 0, thành viên đã tồn tại trong nhóm
     return count > 0;
 }
