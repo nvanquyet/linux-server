@@ -36,6 +36,8 @@ void user_set_service(User *user, Service *service);
 void close_session_callback(void *arg);
 User *findUserById(int id);
 
+User* get_all_users_except(User* current_user, int* count);
+User* get_all_users(int* count);
 #endif
 
 

@@ -368,3 +368,114 @@ User *findUserById(int id) {
     db_result_set_free(result);
     return user;
 }
+User* get_all_users_except(User* current_user, int* count) {
+    if (!current_user || !count) return NULL;
+
+    DbStatement* stmt = db_prepare(SQL_GET_ALL_USERS_EXCEPT);
+    if (!stmt) {
+        log_message(ERROR, "Failed to prepare statement to get all users except current");
+        return NULL;
+    }
+
+    if (!db_bind_int(stmt, 0, current_user->id)) {
+        log_message(ERROR, "Failed to bind current user id");
+        db_statement_free(stmt);
+        return NULL;
+    }
+
+    DbResultSet* result = db_execute_query(stmt);
+    db_statement_free(stmt);
+
+    if (!result || result->row_count == 0) {
+        log_message(INFO, "No other users found");
+        if (result) db_result_set_free(result);
+        *count = 0;
+        return NULL;
+    }
+
+    User* users = (User*)malloc(sizeof(User) * result->row_count);
+    if (!users) {
+        log_message(ERROR, "Memory allocation failed for users array");
+        db_result_set_free(result);
+        return NULL;
+    }
+
+    for (int i = 0; i < result->row_count; i++) {
+        DbResultRow* row = result->rows[i];
+        User* u = &users[i];
+        memset(u, 0, sizeof(User));
+
+        for (int j = 0; j < row->field_count; j++) {
+            DbResultField* field = row->fields[j];
+            if (!field) continue;
+
+            if (strcmp(field->key, "id") == 0) {
+                u->id = *(int*)field->value;
+            } else if (strcmp(field->key, "username") == 0) {
+                u->username = strdup((char*)field->value);
+            } else if (strcmp(field->key, "password") == 0) {
+                u->password = strdup((char*)field->value);
+            } else if (strcmp(field->key, "online") == 0) {
+                u->isOnline = (*(int*)field->value != 0);
+            } else if (strcmp(field->key, "last_attendance_at") == 0) {
+                u->lastLogin = *(long*)field->value;
+            }
+        }
+    }
+
+    *count = result->row_count;
+    db_result_set_free(result);
+    return users;
+}
+User* get_all_users(int* count) {
+    *count = 0;
+
+    DbStatement* stmt = db_prepare(SQL_GET_ALL_USERS);
+    if (!stmt) {
+        log_message(ERROR, "Failed to prepare statement for getting all users");
+        return NULL;
+    }
+
+    DbResultSet* result = db_execute_query(stmt);
+    db_statement_free(stmt);
+    if (!result || result->row_count == 0) {
+        log_message(INFO, "No users found in the database");
+        if (result) db_result_set_free(result);
+        return NULL;
+    }
+
+    User* users = (User*)malloc(sizeof(User) * result->row_count);
+    if (!users) {
+        log_message(ERROR, "Memory allocation failed for users");
+        db_result_set_free(result);
+        return NULL;
+    }
+
+    memset(users, 0, sizeof(User) * result->row_count);
+
+    for (int i = 0; i < result->row_count; i++) {
+        DbResultRow* row = result->rows[i];
+        User* user = &users[i];
+
+        for (int j = 0; j < row->field_count; j++) {
+            DbResultField* field = row->fields[j];
+            if (!field) continue;
+
+            if (strcmp(field->key, "id") == 0) {
+                user->id = *(int*)field->value;
+            } else if (strcmp(field->key, "username") == 0) {
+                user->username = strdup((char*)field->value);
+            } else if (strcmp(field->key, "password") == 0) {
+                user->password = strdup((char*)field->value);
+            } else if (strcmp(field->key, "online") == 0) {
+                user->isOnline = (*(int*)field->value != 0);
+            } else if (strcmp(field->key, "last_attendance_at") == 0) {
+                user->lastLogin = *(long*)field->value;
+            }
+        }
+    }
+
+    *count = result->row_count;
+    db_result_set_free(result);
+    return users;
+}

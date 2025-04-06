@@ -7,7 +7,8 @@
 #define SQL_UPDATE_USER_LOGIN "UPDATE users SET online=?, last_attendance_at=? WHERE id=? LIMIT 1"
 #define SQL_UPDATE_USER_LOGOUT "UPDATE users SET online=? WHERE id=? LIMIT 1"
 #define SQL_GET_USER_BY_ID "SELECT * FROM users WHERE id=?"
-
+#define SQL_GET_ALL_USERS_EXCEPT "SELECT id, username, password, online, last_attendance_at FROM users WHERE id != ?"
+#define SQL_GET_ALL_USERS "SELECT id, username, password, online, last_attendance_at FROM users"
 
 // 📌 Group Queries
 #define SQL_CREATE_GROUP "INSERT INTO groups (group_name, created_by, created_at) VALUES (?, ?, ?)"
@@ -43,7 +44,20 @@
 "GROUP BY chat_id " \
 "ORDER BY last_time DESC"
 
+#define SQL_GET_MESSAGES_WITH_USER \
+"SELECT m.sender_id, u.username AS sender_name, m.message_content, m.timestamp \
+FROM messages m \
+JOIN users u ON m.sender_id = u.id \
+WHERE ((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?)) \
+AND m.group_id = 0 \
+ORDER BY m.timestamp ASC"
 
+#define SQL_GET_MESSAGES_WITH_GROUP \
+"SELECT m.sender_id, u.username AS sender_name, m.message_content, m.timestamp \
+FROM messages m \
+JOIN users u ON m.sender_id = u.id \
+WHERE m.group_id = ? \
+ORDER BY m.timestamp ASC"
 
 // Gửi tin nhắn riêng
 #define SQL_INSERT_PRIVATE_MESSAGE \

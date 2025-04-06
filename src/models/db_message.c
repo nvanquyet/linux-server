@@ -149,3 +149,65 @@ void save_group_message(int sender_id, int group_id, const char* content) {
     db_statement_free(stmt);
     log_message(INFO, "Saved group message from %d to group %d: %s", sender_id, group_id, content);
 }
+
+MessageData* get_chat_messages(int user_id, int chat_with_id, int group_id, int* count) {
+    *count = 0;
+    DbStatement* stmt = NULL;
+
+    if (group_id > 0) {
+        stmt = db_prepare(SQL_GET_MESSAGES_WITH_GROUP);
+        if (!stmt) {
+            log_message(ERROR, "Failed to prepare statement for group messages");
+            return NULL;
+        }
+        db_bind_int(stmt, 0, group_id);
+    } else {
+        stmt = db_prepare(SQL_GET_MESSAGES_WITH_USER);
+        if (!stmt) {
+            log_message(ERROR, "Failed to prepare statement for user messages");
+            return NULL;
+        }
+        db_bind_int(stmt, 0, user_id);
+        db_bind_int(stmt, 1, chat_with_id);
+        db_bind_int(stmt, 2, chat_with_id);
+        db_bind_int(stmt, 3, user_id);
+    }
+
+    DbResultSet* result = db_execute_query(stmt);
+    db_statement_free(stmt);
+
+    if (!result || result->row_count == 0) {
+        if (result) db_result_set_free(result);
+        return NULL;
+    }
+
+    MessageData* messages = (MessageData*)malloc(sizeof(MessageData) * result->row_count);
+    if (!messages) {
+        db_result_set_free(result);
+        return NULL;
+    }
+
+    for (int i = 0; i < result->row_count; i++) {
+        DbResultRow* row = result->rows[i];
+        MessageData* m = &messages[i];
+
+        for (int j = 0; j < row->field_count; j++) {
+            DbResultField* field = row->fields[j];
+            if (!field) continue;
+
+            if (strcmp(field->key, "sender_id") == 0) {
+                m->sender_id = *(int*)field->value;
+            } else if (strcmp(field->key, "sender_name") == 0) {
+                m->sender_name = strdup((char*)field->value);
+            }else if (strcmp(field->key, "message_content") == 0) {
+                m->content = strdup((char*)field->value);
+            } else if (strcmp(field->key, "timestamp") == 0) {
+                m->timestamp = *(long*)field->value;
+            }
+        }
+    }
+
+    *count = result->row_count;
+    db_result_set_free(result);
+    return messages;
+}

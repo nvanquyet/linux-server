@@ -32,7 +32,7 @@ void controller_set_user(Controller* controller, User* user);
 void controller_on_message(Controller* controller, Message* msg);
 
 
-void get_online_users(Session* session);
+void get_users(Session* session);
 void get_joined_groups(Session* session, Message* msg);
 void server_handle_join_group(Session* session, Message* msg);
 void server_handle_leave_group(Session* session, Message* msg);
@@ -41,4 +41,6 @@ void server_receive_message(Session* session, Message* msg);
 void server_receive_group_message(Session* session, Message* msg);
 void get_chat_history(Session* session, Message* msg);
 void server_create_group(Session* session, Message* msg);
+void get_user_message(Session* session, Message* msg);
+void get_group_message(Session* session, Message* msg);
 #endif

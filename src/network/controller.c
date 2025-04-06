@@ -23,7 +23,7 @@ void controller_message_not_in_chat(Controller* self, Message* ms);
 void controller_new_message(Controller* self, Message* ms);
 
 
-void get_online_users(Session* session);
+void get_users(Session* session);
 
 Controller* createController(Session* client){
     Controller* controller = (Controller*)malloc(sizeof(Controller));
@@ -71,14 +71,14 @@ void controller_on_message(Controller* self, Message* message){
     case LOGIN:
         self->client->login(self->client, message);
         break;
+    case LOGOUT:
+        session_close_message(self->client);
+        break;
     case REGISTER:
         self->client->clientRegister(self->client, message);
         break;
-    case LOGOUT:
-        log_message(INFO, "Client %d: logout", self->client->id);
-        break;
-    case GET_ONLINE_USERS:
-        get_online_users(self->client);
+    case GET_USERS:
+        get_users(self->client);
         break;
     case GET_JOINED_GROUPS:
         get_joined_groups(self->client, message);
@@ -103,6 +103,12 @@ void controller_on_message(Controller* self, Message* message){
         break;
     case GET_CHAT_HISTORY:
         get_chat_history(self->client, message);
+        break;
+    case GET_USERS_MESSAGE:
+        get_user_message(self->client, message);
+        break;
+    case GET_GROUPS_MESSAGE:
+        get_group_message(self->client, message);
         break;
     default:
         log_message(ERROR, "Client %d: unknown command %d", self->client->id, command);
@@ -152,7 +158,7 @@ void controller_new_message(Controller* self, Message* ms){
     log_message(INFO, "Client %d: new message", self->client->id);
 }
 
-void get_online_users(Session* session){
+void get_users(Session* session){
     ServerManager *manager = server_manager_get_instance();
     if(manager == NULL){
         return;
@@ -160,21 +166,31 @@ void get_online_users(Session* session){
     if(session == NULL){
         return;
     }
-
+    int all_user_count = 0;
+    User* all_users = get_all_users(&all_user_count);
     User *users[MAX_USERS];
     int count = 0;
     server_manager_get_users(users, &count);
-
-    Message *msg = message_create(GET_ONLINE_USERS);
+    for (int i = 0; i < all_user_count; i++) {
+        all_users[i].isOnline = false;
+        for (int j = 0; j < count; j++) {
+            if (all_users[i].id == users[j]->id) {
+                all_users[i].isOnline = true;
+                break;
+            }
+        }
+    }
+    Message *msg = message_create(GET_USERS);
     if(msg == NULL){
         log_message(ERROR, "Failed to create message");
         return;
     }
-    message_write_int(msg, count);
-    for(int i = 0; i < count; i++){
-        message_write_string(msg, users[i]->username);
+    message_write_int(msg, all_user_count);
+    for (int i = 0; i < all_user_count; i++) {
+        message_write_int(msg, all_users[i].id);
+        message_write_string(msg, all_users[i].username);
+        message_write_bool(msg, all_users[i].isOnline);
     }
-
     session_send_message(session, msg);
 }
 
@@ -415,6 +431,7 @@ void server_receive_group_message(Session* session, Message* msg) {
         session_send_message(session, mess);
     }
 }
+
 void get_chat_history(Session* session, Message* msg) {
     ServerManager *manager = server_manager_get_instance();
     if (manager == NULL || session == NULL || msg == NULL) return;
@@ -455,4 +472,74 @@ void get_chat_history(Session* session, Message* msg) {
     }
 
     session_send_message(session, message);
+}
+void get_user_message(Session* session, Message* msg) {
+    ServerManager *manager = server_manager_get_instance();
+    if (manager == NULL || session == NULL || msg == NULL) return;
+
+    msg->position = 0;
+    int user_id = (int) message_read_int(msg);
+    int target_id = (int) message_read_int(msg);
+
+    Message* response_msg = message_create(GET_USERS_MESSAGE);
+    if (response_msg == NULL) {
+        log_message(ERROR, "Failed to create message");
+        return;
+    }
+
+    int count = 0;
+    MessageData* messages = get_chat_messages(user_id, target_id, -1, &count);
+
+    if (messages == NULL || count == 0) {
+        message_write_bool(response_msg, false);
+    } else {
+        message_write_bool(response_msg, true);
+        message_write_int(response_msg, count);
+
+        // Gửi từng tin nhắn
+        for (int i = 0; i < count; i++) {
+            message_write_int(response_msg, messages[i].sender_id);
+            message_write_string(response_msg, messages[i].sender_name);
+            message_write_string(response_msg, messages[i].content);
+            message_write_long(response_msg, messages[i].timestamp);
+        }
+
+        free(messages);
+    }
+    session_send_message(session, response_msg);
+}
+void get_group_message(Session* session, Message* msg) {
+    ServerManager *manager = server_manager_get_instance();
+    if (manager == NULL || session == NULL || msg == NULL) return;
+
+    msg->position = 0;
+    int user_id = (int) message_read_int(msg);
+    int group_id = (int) message_read_int(msg);
+
+    Message* response_msg = message_create(GET_GROUPS_MESSAGE);
+    if (response_msg == NULL) {
+        log_message(ERROR, "Failed to create message");
+        return;
+    }
+
+    int count = 0;
+    MessageData* messages = get_chat_messages(user_id, -1, group_id, &count);
+
+    if (messages == NULL || count == 0) {
+        message_write_bool(response_msg, false);
+    } else {
+        message_write_bool(response_msg, true);
+        message_write_int(response_msg, count);
+
+        // Gửi từng tin nhắn
+        for (int i = 0; i < count; i++) {
+            message_write_int(response_msg, messages[i].sender_id);
+            message_write_string(response_msg, messages[i].sender_name);
+            message_write_string(response_msg, messages[i].content);
+            message_write_long(response_msg, messages[i].timestamp);
+        }
+
+        free(messages);
+    }
+    session_send_message(session, response_msg);
 }
