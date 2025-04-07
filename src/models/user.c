@@ -11,6 +11,7 @@
 #include "server_manager.h"
 
 void login(User *self);
+bool loginResult(User *self, char *errorMessage, size_t errorSize);
 void logout(User *self);
 void userRegister(User *self);
 void close_session_callback(void *arg);
@@ -43,6 +44,7 @@ User *createUser(User *self, Session *client, char *username, char *password)
     self->lastLogin = 0;
 
     self->login = login;
+    self->loginResult = loginResult;
     self->logout = logout;
     self->userRegister = userRegister;
     self->isCleaned = false;
@@ -101,6 +103,117 @@ void user_set_session(User *user, Session *session)
 void user_set_service(User *user, Service *service)
 {
     user->service = service;
+}
+bool loginResult(User *self, char *errorMessage, size_t errorSize)
+{
+    if (!validate_username_password(self->username, self->password))
+    {
+        snprintf(errorMessage, errorSize, "Invalid username or password");
+        return false;
+    }
+
+    DbStatement *stmt = db_prepare(SQL_LOGIN);
+    if (stmt == NULL)
+    {
+        snprintf(errorMessage, errorSize, "Failed to prepare login statement");
+        log_message(ERROR, "%s", errorMessage);
+        return false;
+    }
+
+    if (!db_bind_string(stmt, 0, self->username))
+    {
+        snprintf(errorMessage, errorSize, "Failed to bind username parameter");
+        log_message(ERROR, "%s", errorMessage);
+        db_statement_free(stmt);
+        return false;
+    }
+
+    DbResultSet *result = db_execute_query(stmt);
+    db_statement_free(stmt);
+
+    if (result == NULL)
+    {
+        snprintf(errorMessage, errorSize, "Login failed: server error");
+        return false;
+    }
+
+    if (result->row_count == 0)
+    {
+        snprintf(errorMessage, errorSize, "Login failed: Invalid username or password");
+        db_result_set_free(result);
+        return false;
+    }
+
+    DbResultRow *row = result->rows[0];
+    int userId = 0;
+    bool passwordMatched = false;
+
+    for (int i = 0; i < row->field_count; i++)
+    {
+        DbResultField *field = row->fields[i];
+        if (field == NULL) continue;
+
+        if (strcmp(field->key, "id") == 0 &&
+            (field->type == MYSQL_TYPE_LONG || field->type == MYSQL_TYPE_LONGLONG))
+        {
+            userId = *(int *)field->value;
+        }
+        else if (strcmp(field->key, "password") == 0 &&
+                 (field->type == MYSQL_TYPE_STRING || field->type == MYSQL_TYPE_VAR_STRING))
+        {
+            passwordMatched = (strcmp((char *)field->value, self->password) == 0);
+        }
+    }
+
+    if (!passwordMatched)
+    {
+        snprintf(errorMessage, errorSize, "Invalid username or password");
+        db_result_set_free(result);
+        return false;
+    }
+
+    self->id = userId;
+    self->isOnline = true;
+    self->isCleaned = false;
+    self->lastLogin = (long)time(NULL);
+    self->isLoaded = false;
+
+    ServerManager *manager = server_manager_get_instance();
+    server_manager_lock();
+
+    User *existing_user = server_manager_find_user_by_username_internal(self->username, true);
+    if (existing_user != NULL && !existing_user->isCleaned)
+    {
+        snprintf(errorMessage, errorSize, "Account is already logged in");
+
+        CloseSessionData *existing_data = malloc(sizeof(CloseSessionData));
+        if (existing_data)
+        {
+            existing_data->user = existing_user;
+            existing_data->manager = manager;
+            utils_set_timeout(close_session_callback, existing_data, 1000);
+        }
+
+        CloseSessionData *current_data = malloc(sizeof(CloseSessionData));
+        if (current_data)
+        {
+            current_data->user = self;
+            current_data->manager = manager;
+            utils_set_timeout(close_session_callback, current_data, 1000);
+        }
+
+        server_manager_unlock();
+        db_result_set_free(result);
+        return false;
+    }
+
+    // Đăng nhập thành công
+    server_manager_add_user_internal(self, true);
+    self->isLoaded = true;
+
+    db_result_set_free(result);
+    server_manager_unlock();
+    return true;
 }
 
 void login(User *self)

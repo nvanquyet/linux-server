@@ -33,7 +33,7 @@ struct Session {
     void (*setService)(Session* self, Service* service);
     void (*sendMessage)(Session* self, Message* message);
     void (*close)(Session* self);
-    void (*login)(Session* self, Message* msg);
+    bool (*login)(Session *self, Message *msg, char *errorMessage, size_t errorSize);
     void (*clientRegister)(Session* self, Message* msg);
     void (*clientOk)(Session* self);
     bool (*doSendMessage)(Session* self, Message* msg);
@@ -53,7 +53,7 @@ void session_set_handler(Session* session, Controller* handler);
 void session_set_service(Session* session, Service* service);
 void session_send_message(Session* session, Message* message);
 void session_close(Session* session);
-void session_login(Session* session, Message* message);
+bool session_login(Session *self, Message *msg, char *errorMessage, size_t errorSize);
 void session_register(Session* session, Message* message);
 void session_client_ok(Session* session);
 bool session_do_send_message(Session* session, Message* message);

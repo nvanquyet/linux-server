@@ -49,7 +49,7 @@ void service_login_success(Service* service) {
         return;
     }
     
-    Message* msg = message_create(LOGIN_SUCCESS);
+    Message* msg = message_create(LOGIN);
     if (msg == NULL) {
         log_message(ERROR, "Failed to create message");
         return;

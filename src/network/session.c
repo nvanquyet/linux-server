@@ -309,59 +309,85 @@ void session_disconnect(Session *self) {
   close(self->socket);
   self->connected = false;
 }
-
-void session_login(Session *self, Message *msg) {
-  if (self == NULL || msg == NULL) {
-    return;
-  }
-
-  SessionPrivate *private = (SessionPrivate *)self->_private;
-  if (!self->connected || !private->sendKeyComplete) {
-    session_disconnect(self);
-    return;
-  }
-
-  if (self->isLoginSuccess || self->isLogin) {
-    return;
-  }
-
-  self->isLogin = true;
-
-  msg->position = 0;
-
-  char username[256] = {0};
-  char password[256] = {0};
-
-  if (!message_read_string(msg, username, sizeof(username)) ||
-      !message_read_string(msg, password, sizeof(password))) {
-    log_message(ERROR, "Failed to read login data");
-    return;
-  }
-
-  User *user = createUser(NULL, self, username, password);
-  if (user != NULL) {
-    user->login(user);
-    if (user->isLoaded) {
-      log_message(INFO, "Login success: %s", user->username);
-      self->isLoginSuccess = true;
-      self->user = user;
-
-      if (self->handler != NULL) {
-        controller_set_user(self->handler, user);
-        controller_set_service(self->handler, self->service);
-        self->service->login_success(self->service);
-      }
-    } else {
-      self->isLoginSuccess = false;
-      self->isLogin = false;
-      destroyUser(user);
+bool session_login(Session *self, Message *msg, char *errorMessage, size_t errorSize)
+{
+    if (self == NULL || msg == NULL)
+    {
+        snprintf(errorMessage, errorSize, "Session or message is NULL");
+        return false;
     }
-  } else {
-    log_message(ERROR, "Login failed: %s", username);
-  }
 
-  self->isLogin = false;
+    SessionPrivate *private = (SessionPrivate *)self->_private;
+
+    if (!self->connected || !private->sendKeyComplete)
+    {
+        snprintf(errorMessage, errorSize, "Connection not established or key exchange incomplete");
+        session_disconnect(self);
+        return false;
+    }
+
+    if (self->isLoginSuccess || self->isLogin)
+    {
+        snprintf(errorMessage, errorSize, "Session already in login process or logged in");
+        return false;
+    }
+
+    self->isLogin = true;
+    msg->position = 0;
+
+    char username[256] = {0};
+    char password[256] = {0};
+
+    if (!message_read_string(msg, username, sizeof(username)) ||
+        !message_read_string(msg, password, sizeof(password)))
+    {
+        snprintf(errorMessage, errorSize, "Failed to read login data from message");
+        return false;
+    }
+
+    User *user = createUser(NULL, self, username, password);
+    if (user == NULL)
+    {
+        snprintf(errorMessage, errorSize, "Failed to create user instance");
+        self->isLogin = false;
+        return false;
+    }
+
+    char loginError[256];
+    bool success = user->loginResult(user, loginError, sizeof(loginError));
+
+    if (!success)
+    {
+        snprintf(errorMessage, errorSize, "Login failed: %s", loginError);
+        destroyUser(user);
+        self->isLogin = false;
+        return false;
+    }
+
+    if (user->isLoaded)
+    {
+        self->isLoginSuccess = true;
+        self->user = user;
+
+        if (self->handler != NULL)
+        {
+            controller_set_user(self->handler, user);
+            controller_set_service(self->handler, self->service);
+            self->service->login_success(self->service);
+        }
+
+        return true;
+    }
+    else
+    {
+        snprintf(errorMessage, errorSize, "User login data not loaded");
+        destroyUser(user);
+        self->isLoginSuccess = false;
+        self->isLogin = false;
+        return false;
+    }
 }
+
 void trade_key(Session *session, Message *msg) {
   if (session == NULL) {
     return;

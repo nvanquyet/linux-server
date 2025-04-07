@@ -24,6 +24,7 @@ struct User
     bool messageSent;
 
     void (*login)(User *self);
+    bool (*loginResult)(User *self, char *errorMessage, size_t errorSize);
     void (*logout)(User *self);
     void (*userRegister)(User *self);
     void (*clean_user)(User *self);

@@ -31,6 +31,9 @@ void controller_set_service(Controller* controller, Service* service);
 void controller_set_user(Controller* controller, User* user);
 void controller_on_message(Controller* controller, Message* msg);
 
+void handle_login(Session* session, Message* message);
+void handle_logout(Session* session, Message* message);
+void handle_register(Session* session, Message* message);
 
 void get_users(Session* session);
 void get_joined_groups(Session* session, Message* msg);

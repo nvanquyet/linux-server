@@ -69,13 +69,14 @@ void controller_on_message(Controller* self, Message* message){
     switch (command)
     {
     case LOGIN:
-        self->client->login(self->client, message);
+        handle_login(self->client, message);
         break;
     case LOGOUT:
-        session_close_message(self->client);
+        //session_close_message(self->client);
+        handle_logout(self->client, message);
         break;
     case REGISTER:
-        self->client->clientRegister(self->client, message);
+        handle_register(self->client, message);
         break;
     case GET_USERS:
         get_users(self->client);
@@ -158,6 +159,33 @@ void controller_new_message(Controller* self, Message* ms){
     log_message(INFO, "Client %d: new message", self->client->id);
 }
 
+void handle_login(Session* session, Message* message) {
+    char errorMsg[256];
+    bool loginOk = session->login(session, message, errorMsg, sizeof(errorMsg));
+    Message *msg = message_create(LOGIN);
+    if (msg == NULL) {
+        log_message(ERROR, "Failed to create message");
+        return;
+    }
+    message_write_bool(msg, loginOk);
+    free(message);
+    if (!loginOk) {
+        message_write_string(msg, errorMsg);
+    }
+    session_send_message(session, msg);
+}
+void handle_register(Session* session, Message* message) {
+    self->client->clientRegister(self->client, message);
+}
+
+void handle_logout(Session* session, Message* message) {
+    session->isLoginSuccess = false;
+    session->user->logout(session->user);
+    free(message);
+    Message *msg = message_create(LOGOUT);
+    message_write_bool(msg, true);
+    session_send_message(session, msg);
+}
 void get_users(Session* session){
     ServerManager *manager = server_manager_get_instance();
     if(manager == NULL){
