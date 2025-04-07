@@ -3,12 +3,12 @@
 
 // 📌 User Queries
 #define SQL_REGISTER "INSERT INTO users (username, password) VALUES (?, ?)"
-#define SQL_LOGIN "SELECT * FROM users WHERE username=?"
 #define SQL_UPDATE_USER_LOGIN "UPDATE users SET online=?, last_attendance_at=? WHERE id=? LIMIT 1"
 #define SQL_UPDATE_USER_LOGOUT "UPDATE users SET online=? WHERE id=? LIMIT 1"
 #define SQL_GET_USER_BY_ID "SELECT * FROM users WHERE id=?"
 #define SQL_GET_ALL_USERS_EXCEPT "SELECT id, username, password, online, last_attendance_at FROM users WHERE id != ?"
 #define SQL_GET_ALL_USERS "SELECT id, username, password, online, last_attendance_at FROM users"
+#define SQL_LOGIN "SELECT id , password FROM users WHERE username = ?"
 
 // 📌 Group Queries
 #define SQL_CREATE_GROUP "INSERT INTO groups (group_name, created_by, created_at) VALUES (?, ?, ?)"

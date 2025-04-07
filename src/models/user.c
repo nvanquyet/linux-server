@@ -11,7 +11,8 @@
 #include "server_manager.h"
 
 void login(User *self);
-bool loginResult(User *self, char *errorMessage, size_t errorSize);
+int loginResult(User *self, char *errorMessage, size_t errorSize);
+bool registerResult(User *self, char *errorMessage, size_t errorSize);
 void logout(User *self);
 void userRegister(User *self);
 void close_session_callback(void *arg);
@@ -47,6 +48,7 @@ User *createUser(User *self, Session *client, char *username, char *password)
     self->loginResult = loginResult;
     self->logout = logout;
     self->userRegister = userRegister;
+    self->registerResult = registerResult;
     self->isCleaned = false;
     self->clean_user = cleanUp;
     self->isLoaded = false;
@@ -104,12 +106,12 @@ void user_set_service(User *user, Service *service)
 {
     user->service = service;
 }
-bool loginResult(User *self, char *errorMessage, size_t errorSize)
+int loginResult(User *self, char *errorMessage, size_t errorSize)
 {
     if (!validate_username_password(self->username, self->password))
     {
         snprintf(errorMessage, errorSize, "Invalid username or password");
-        return false;
+        return -1; // Trả về -1 để chỉ ra lỗi
     }
 
     DbStatement *stmt = db_prepare(SQL_LOGIN);
@@ -117,7 +119,7 @@ bool loginResult(User *self, char *errorMessage, size_t errorSize)
     {
         snprintf(errorMessage, errorSize, "Failed to prepare login statement");
         log_message(ERROR, "%s", errorMessage);
-        return false;
+        return -1; // Trả về -1 khi không thể chuẩn bị câu lệnh
     }
 
     if (!db_bind_string(stmt, 0, self->username))
@@ -125,23 +127,22 @@ bool loginResult(User *self, char *errorMessage, size_t errorSize)
         snprintf(errorMessage, errorSize, "Failed to bind username parameter");
         log_message(ERROR, "%s", errorMessage);
         db_statement_free(stmt);
-        return false;
+        return -1; // Trả về -1 khi không thể liên kết username
     }
-
     DbResultSet *result = db_execute_query(stmt);
     db_statement_free(stmt);
 
     if (result == NULL)
     {
         snprintf(errorMessage, errorSize, "Login failed: server error");
-        return false;
+        return -1; // Trả về -1 khi không thể thực thi câu lệnh
     }
 
     if (result->row_count == 0)
     {
         snprintf(errorMessage, errorSize, "Login failed: Invalid username or password");
         db_result_set_free(result);
-        return false;
+        return -1; // Trả về -1 khi không tìm thấy người dùng
     }
 
     DbResultRow *row = result->rows[0];
@@ -169,9 +170,10 @@ bool loginResult(User *self, char *errorMessage, size_t errorSize)
     {
         snprintf(errorMessage, errorSize, "Invalid username or password");
         db_result_set_free(result);
-        return false;
+        return -1; // Trả về -1 khi mật khẩu không khớp
     }
 
+    // Nếu đăng nhập thành công, cập nhật thông tin người dùng
     self->id = userId;
     self->isOnline = true;
     self->isCleaned = false;
@@ -204,7 +206,7 @@ bool loginResult(User *self, char *errorMessage, size_t errorSize)
 
         server_manager_unlock();
         db_result_set_free(result);
-        return false;
+        return -1; // Trả về -1 khi tài khoản đã đăng nhập
     }
 
     // Đăng nhập thành công
@@ -213,8 +215,9 @@ bool loginResult(User *self, char *errorMessage, size_t errorSize)
 
     db_result_set_free(result);
     server_manager_unlock();
-    return true;
+    return userId; // Trả về id người dùng khi đăng nhập thành công
 }
+
 
 void login(User *self)
 {
@@ -400,6 +403,83 @@ void userRegister(User *self)
     {
         log_message(ERROR, "Failed to register user");
         self->service->server_message(self->session, "Registration failed");
+    }
+}
+
+bool registerResult(User *self, char *errorMessage, size_t errorSize)
+{
+    self->isOnline = false;
+
+    if (!validate_username_password(self->username, self->password))
+    {
+        snprintf(errorMessage, errorSize, "Invalid username or password");
+        return false;
+    }
+
+    DbStatement *check_stmt = db_prepare(SQL_LOGIN);
+    if (!check_stmt)
+    {
+        log_message(ERROR, "Failed to prepare check statement");
+        snprintf(errorMessage, errorSize, "Internal server error (prepare check)");
+        return false;
+    }
+
+    if (!db_bind_string(check_stmt, 0, self->username))
+    {
+        log_message(ERROR, "Failed to bind username for check");
+        db_statement_free(check_stmt);
+        snprintf(errorMessage, errorSize, "Internal server error (bind username)");
+        return false;
+    }
+
+    DbResultSet *result = db_execute_query(check_stmt);
+    db_statement_free(check_stmt);
+
+    if (result)
+    {
+        if (result->row_count > 0)
+        {
+            snprintf(errorMessage, errorSize, "User already exists");
+            db_result_set_free(result);
+            return false;
+        }
+        db_result_set_free(result);
+    }
+
+    DbStatement *reg_stmt = db_prepare(SQL_REGISTER);
+    if (!reg_stmt)
+    {
+        log_message(ERROR, "Failed to prepare registration statement");
+        snprintf(errorMessage, errorSize, "Internal server error (prepare registration)");
+        return false;
+    }
+
+    if (!db_bind_string(reg_stmt, 0, self->username))
+    {
+        log_message(ERROR, "Failed to bind username for registration");
+        db_statement_free(reg_stmt);
+        snprintf(errorMessage, errorSize, "Internal server error (bind username)");
+        return false;
+    }
+
+    if (!db_bind_string(reg_stmt, 1, self->password))
+    {
+        log_message(ERROR, "Failed to bind password");
+        db_statement_free(reg_stmt);
+        snprintf(errorMessage, errorSize, "Internal server error (bind password)");
+        return false;
+    }
+
+    if (db_execute(reg_stmt))
+    {
+        log_message(INFO, "User registered successfully");
+        return true;
+    }
+    else
+    {
+        log_message(ERROR, "Failed to register user");
+        snprintf(errorMessage, errorSize, "Registration failed");
+        return false;
     }
 }
 

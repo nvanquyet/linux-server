@@ -4,6 +4,7 @@
 #include "session.h"
 #include "stdbool.h"
 #include "service.h"
+#include <stddef.h>
 
 typedef struct User User;
 typedef struct Session Session;
@@ -24,7 +25,8 @@ struct User
     bool messageSent;
 
     void (*login)(User *self);
-    bool (*loginResult)(User *self, char *errorMessage, size_t errorSize);
+    int (*loginResult)(User *self, char *errorMessage, size_t errorSize);
+    bool (*registerResult)(User *self, char *errorMessage, size_t errorSize);
     void (*logout)(User *self);
     void (*userRegister)(User *self);
     void (*clean_user)(User *self);

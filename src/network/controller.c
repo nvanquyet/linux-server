@@ -161,26 +161,58 @@ void controller_new_message(Controller* self, Message* ms){
 
 void handle_login(Session* session, Message* message) {
     char errorMsg[256];
-    bool loginOk = session->login(session, message, errorMsg, sizeof(errorMsg));
+
+    char username[256];
+    char password[256];
     Message *msg = message_create(LOGIN);
     if (msg == NULL) {
         log_message(ERROR, "Failed to create message");
         return;
     }
-    message_write_bool(msg, loginOk);
+    message->position = 0;
+
+    if (!message_read_string(message, username, sizeof(username))
+        || !message_read_string(message, password, sizeof(username))) {
+        log_message(WARN, "Invalid username");
+        message_write_bool(msg, false);
+        message_write_string(msg, "Cant read value");
+        session_send_message(session, msg);
+        return;
+    }
+    int loginOk = session->login(session, message, errorMsg, sizeof(errorMsg));
+    message_write_bool(msg, loginOk > 0);
     free(message);
     if (!loginOk) {
         message_write_string(msg, errorMsg);
+    }else {
+        message_write_int(msg, loginOk);
+        message_write_string(msg, username);
+        message_write_string(msg, password);
     }
     session_send_message(session, msg);
 }
 void handle_register(Session* session, Message* message) {
-    self->client->clientRegister(self->client, message);
+    char errorMsg[256];
+    bool registerOk = session->clientRegister(session, message, errorMsg, sizeof(errorMsg));
+
+    Message *msg = message_create(REGISTER);
+    if (msg == NULL) {
+        log_message(ERROR, "Failed to create register response message");
+        return;
+    }
+
+    message_write_bool(msg, registerOk);
+    if (!registerOk) {
+        message_write_string(msg, errorMsg);
+    }
+
+    session_send_message(session, msg);
+    free(message);
 }
 
 void handle_logout(Session* session, Message* message) {
-    session->isLoginSuccess = false;
     session->user->logout(session->user);
+    session->isLogin = false;
     free(message);
     Message *msg = message_create(LOGOUT);
     message_write_bool(msg, true);

@@ -67,8 +67,8 @@ void send_dh_params(Session *session, Message *msg);
 void clean_network(Session *session);
 void session_close_message(Session *session);
 
-void session_login(Session *self, Message *msg);
-void session_register(Session *self, Message *msg);
+int session_login(Session *self, Message *msg, char *errorMessage, size_t errorSize);
+bool session_register(Session *self, Message *msg, char *errorMessage, size_t errorSize);
 void session_client_ok(Session *self);
 bool session_is_connected(Session *self);
 void session_disconnect(Session *self);
@@ -106,7 +106,6 @@ Session *createSession(int socket, int id) {
   session->socket = socket;
   session->id = id;
   session->connected = true;
-  session->isLoginSuccess = false;
   session->clientOK = false;
   session->isLogin = false;
   session->IPAddress = NULL;
@@ -289,7 +288,6 @@ void clean_network(Session *session) {
   SessionPrivate *private = (SessionPrivate *)session->_private;
 
   session->connected = false;
-  session->isLoginSuccess = false;
 
   if (session->socket != -1) {
     shutdown(session->socket, SHUT_RDWR);
@@ -309,12 +307,12 @@ void session_disconnect(Session *self) {
   close(self->socket);
   self->connected = false;
 }
-bool session_login(Session *self, Message *msg, char *errorMessage, size_t errorSize)
+int session_login(Session *self, Message *msg, char *errorMessage, size_t errorSize)
 {
     if (self == NULL || msg == NULL)
     {
         snprintf(errorMessage, errorSize, "Session or message is NULL");
-        return false;
+        return 0;
     }
 
     SessionPrivate *private = (SessionPrivate *)self->_private;
@@ -323,13 +321,13 @@ bool session_login(Session *self, Message *msg, char *errorMessage, size_t error
     {
         snprintf(errorMessage, errorSize, "Connection not established or key exchange incomplete");
         session_disconnect(self);
-        return false;
+        return 0;
     }
 
-    if (self->isLoginSuccess || self->isLogin)
+    if (self->isLogin)
     {
         snprintf(errorMessage, errorSize, "Session already in login process or logged in");
-        return false;
+        return 0;
     }
 
     self->isLogin = true;
@@ -342,7 +340,7 @@ bool session_login(Session *self, Message *msg, char *errorMessage, size_t error
         !message_read_string(msg, password, sizeof(password)))
     {
         snprintf(errorMessage, errorSize, "Failed to read login data from message");
-        return false;
+        return 0;
     }
 
     User *user = createUser(NULL, self, username, password);
@@ -350,13 +348,13 @@ bool session_login(Session *self, Message *msg, char *errorMessage, size_t error
     {
         snprintf(errorMessage, errorSize, "Failed to create user instance");
         self->isLogin = false;
-        return false;
+        return 0;
     }
 
     char loginError[256];
-    bool success = user->loginResult(user, loginError, sizeof(loginError));
+    int success = user->loginResult(user, loginError, sizeof(loginError));
 
-    if (!success)
+    if (success <= 0)
     {
         snprintf(errorMessage, errorSize, "Login failed: %s", loginError);
         destroyUser(user);
@@ -366,7 +364,6 @@ bool session_login(Session *self, Message *msg, char *errorMessage, size_t error
 
     if (user->isLoaded)
     {
-        self->isLoginSuccess = true;
         self->user = user;
 
         if (self->handler != NULL)
@@ -376,15 +373,14 @@ bool session_login(Session *self, Message *msg, char *errorMessage, size_t error
             self->service->login_success(self->service);
         }
 
-        return true;
+        return success;
     }
     else
     {
         snprintf(errorMessage, errorSize, "User login data not loaded");
         destroyUser(user);
-        self->isLoginSuccess = false;
         self->isLogin = false;
-        return false;
+        return 0;
     }
 }
 
@@ -457,10 +453,10 @@ void send_public_key(Session *session, Message *msg) {
   generate_aes_key_from_K(key->K, private->key);
   private->sendKeyComplete = true;
 }
-
-void session_register(Session *self, Message *msg) {
+bool session_register(Session *self, Message *msg, char *errorMessage, size_t errorSize) {
   if (self == NULL || msg == NULL) {
-    return;
+    snprintf(errorMessage, errorSize, "Internal error: Session or message is NULL");
+    return false;
   }
 
   msg->position = 0;
@@ -470,16 +466,28 @@ void session_register(Session *self, Message *msg) {
   if (!message_read_string(msg, username, sizeof(username)) ||
       !message_read_string(msg, password, sizeof(password))) {
     log_message(ERROR, "Failed to read register data");
-    return;
-  }
+    snprintf(errorMessage, errorSize, "Failed to read registration data");
+    return false;
+      }
 
   User *user = createUser(NULL, self, username, password);
-  if (user != NULL) {
-    user->userRegister(user);
-    self->user = user;
-  } else {
+  if (user == NULL) {
     log_message(ERROR, "Failed to create user");
+    snprintf(errorMessage, errorSize, "Failed to create user");
+    return false;
   }
+
+  char userError[256] = {0};
+  bool success = user->registerResult(user, userError, sizeof(userError));
+
+  if (!success) {
+    snprintf(errorMessage, errorSize, "%s", userError[0] != '\0' ? userError : "Registration failed");
+    destroyUser(user);
+    return false;
+  }
+
+  self->user = user;
+  return true;
 }
 
 void session_client_ok(Session *self) {
