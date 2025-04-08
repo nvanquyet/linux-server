@@ -3,6 +3,8 @@
 ### ✅ 1. Create and Use Database
 
 ```sql
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '12332145';
+FLUSH PRIVILEGES;
 CREATE DATABASE IF NOT EXISTS linux;
 USE linux;
 ```
