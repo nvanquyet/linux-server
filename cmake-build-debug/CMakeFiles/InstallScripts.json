@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug/cmake_install.cmake",
-		"/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug/src/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

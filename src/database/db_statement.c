@@ -5,9 +5,9 @@
 #include <mysql/mysql.h>
 #include "log.h"
 #include "stdbool.h"
-// #if MYSQL_VERSION_ID >= 80000
-//     typedef bool my_bool; 
-// #endif
+#if MYSQL_VERSION_ID >= 80000
+    typedef bool my_bool;
+#endif
 
 DbStatement *db_prepare(const char *query)
 {

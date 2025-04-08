@@ -60,7 +60,7 @@
 			[
 				{
 					"backtrace" : 4,
-					"path" : "/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/include"
+					"path" : "/home/vawnwuyest/Documents/linux/linux-server/include"
 				},
 				{
 					"backtrace" : 4,
@@ -109,18 +109,22 @@
 				"role" : "flags"
 			},
 			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
 				"backtrace" : 2,
-				"fragment" : "/usr/lib/libssl.so",
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libssl.so",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "/usr/lib/libcrypto.so",
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libcrypto.so",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "/usr/lib/libmysqlclient.so",
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libmysqlclient.so",
 				"role" : "libraries"
 			},
 			{

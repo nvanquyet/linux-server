@@ -39,7 +39,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/addr2line"
+			"value" : "/usr/bin/addr2line"
 		},
 		{
 			"name" : "CMAKE_AR",
@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/ar"
+			"value" : "/usr/bin/ar"
 		},
 		{
 			"name" : "CMAKE_BUILD_TYPE",
@@ -79,7 +79,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug"
+			"value" : "/home/vawnwuyest/Documents/linux/linux-server/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -91,7 +91,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "4"
+			"value" : "3"
 		},
 		{
 			"name" : "CMAKE_CACHE_MINOR_VERSION",
@@ -103,7 +103,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "0"
+			"value" : "30"
 		},
 		{
 			"name" : "CMAKE_CACHE_PATCH_VERSION",
@@ -115,7 +115,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "0"
+			"value" : "5"
 		},
 		{
 			"name" : "CMAKE_COLOR_DIAGNOSTICS",
@@ -130,6 +130,22 @@
 			"value" : "ON"
 		},
 		{
+			"name" : "CMAKE_COLOR_MAKEFILE",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "UNINITIALIZED",
+			"value" : ""
+		},
+		{
 			"name" : "CMAKE_COMMAND",
 			"properties" : 
 			[
@@ -139,7 +155,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/bin/cmake"
+			"value" : "/home/vawnwuyest/Application/clion-2024.3.5/bin/cmake/linux/x64/bin/cmake"
 		},
 		{
 			"name" : "CMAKE_CPACK_COMMAND",
@@ -151,7 +167,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/bin/cpack"
+			"value" : "/home/vawnwuyest/Application/clion-2024.3.5/bin/cmake/linux/x64/bin/cpack"
 		},
 		{
 			"name" : "CMAKE_CTEST_COMMAND",
@@ -163,7 +179,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/bin/ctest"
+			"value" : "/home/vawnwuyest/Application/clion-2024.3.5/bin/cmake/linux/x64/bin/ctest"
 		},
 		{
 			"name" : "CMAKE_C_COMPILER",
@@ -179,7 +195,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/cc"
+			"value" : "/usr/bin/cc"
 		},
 		{
 			"name" : "CMAKE_C_COMPILER_AR",
@@ -195,7 +211,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/gcc-ar"
+			"value" : "/usr/bin/gcc-ar-11"
 		},
 		{
 			"name" : "CMAKE_C_COMPILER_RANLIB",
@@ -211,7 +227,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/gcc-ranlib"
+			"value" : "/usr/bin/gcc-ranlib-11"
 		},
 		{
 			"name" : "CMAKE_C_FLAGS",
@@ -310,18 +326,6 @@
 			"value" : "CMAKE_DLLTOOL-NOTFOUND"
 		},
 		{
-			"name" : "CMAKE_EDIT_COMMAND",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Path to cache edit program executable."
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "/sbin/ccmake"
-		},
-		{
 			"name" : "CMAKE_EXECUTABLE_FORMAT",
 			"properties" : 
 			[
@@ -414,22 +418,6 @@
 			"value" : ""
 		},
 		{
-			"name" : "CMAKE_EXPORT_BUILD_DATABASE",
-			"properties" : 
-			[
-				{
-					"name" : "ADVANCED",
-					"value" : "1"
-				},
-				{
-					"name" : "HELPSTRING",
-					"value" : "Enable/Disable output of build database during the build."
-				}
-			],
-			"type" : "BOOL",
-			"value" : ""
-		},
-		{
 			"name" : "CMAKE_EXPORT_COMPILE_COMMANDS",
 			"properties" : 
 			[
@@ -467,7 +455,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "/home/vawnwuyest/Documents/linux/linux-server/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -479,7 +467,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "Ninja"
+			"value" : "Unix Makefiles"
 		},
 		{
 			"name" : "CMAKE_GENERATOR_INSTANCE",
@@ -527,7 +515,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server"
+			"value" : "/home/vawnwuyest/Documents/linux/linux-server"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -551,7 +539,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "0"
+			"value" : "1"
 		},
 		{
 			"name" : "CMAKE_LINKER",
@@ -567,31 +555,23 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/ld"
-		},
-		{
-			"name" : "CMAKE_LIST_FILE_NAME",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Name of CMakeLists files to read"
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "CMakeLists.txt"
+			"value" : "/usr/bin/ld"
 		},
 		{
 			"name" : "CMAKE_MAKE_PROGRAM",
 			"properties" : 
 			[
 				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
 					"name" : "HELPSTRING",
-					"value" : "No help, variable specified on the command line."
+					"value" : "Path to a program."
 				}
 			],
-			"type" : "UNINITIALIZED",
-			"value" : "/opt/clion/bin/ninja/linux/x64/ninja"
+			"type" : "FILEPATH",
+			"value" : "/usr/bin/gmake"
 		},
 		{
 			"name" : "CMAKE_MODULE_LINKER_FLAGS",
@@ -687,7 +667,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/nm"
+			"value" : "/usr/bin/nm"
 		},
 		{
 			"name" : "CMAKE_NUMBER_OF_MAKEFILES",
@@ -715,7 +695,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/objcopy"
+			"value" : "/usr/bin/objcopy"
 		},
 		{
 			"name" : "CMAKE_OBJDUMP",
@@ -731,7 +711,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/objdump"
+			"value" : "/usr/bin/objdump"
 		},
 		{
 			"name" : "CMAKE_PLATFORM_INFO_INITIALIZED",
@@ -795,7 +775,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/ranlib"
+			"value" : "/usr/bin/ranlib"
 		},
 		{
 			"name" : "CMAKE_READELF",
@@ -811,7 +791,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/readelf"
+			"value" : "/usr/bin/readelf"
 		},
 		{
 			"name" : "CMAKE_ROOT",
@@ -823,7 +803,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/share/cmake"
+			"value" : "/home/vawnwuyest/Application/clion-2024.3.5/bin/cmake/linux/x64/share/cmake-3.30"
 		},
 		{
 			"name" : "CMAKE_SHARED_LINKER_FLAGS",
@@ -1031,7 +1011,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/strip"
+			"value" : "/usr/bin/strip"
 		},
 		{
 			"name" : "CMAKE_TAPI",
@@ -1059,7 +1039,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/sbin/uname"
+			"value" : "/usr/bin/uname"
 		},
 		{
 			"name" : "CMAKE_VERBOSE_MAKEFILE",
@@ -1087,67 +1067,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/usr/lib/libcrypto.so][/usr/include][ ][v3.4.1()]"
-		},
-		{
-			"name" : "MYSQL_CFLAGS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_CFLAGS_I",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_CFLAGS_OTHER",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_FOUND",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_INCLUDEDIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
+			"value" : "[/usr/lib/x86_64-linux-gnu/libcrypto.so][/usr/include][c ][v3.0.2()]"
 		},
 		{
 			"name" : "MYSQL_INCLUDE_DIR",
@@ -1162,18 +1082,6 @@
 			"value" : "/usr/include/mysql"
 		},
 		{
-			"name" : "MYSQL_LIBDIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
 			"name" : "MYSQL_LIBRARIES",
 			"properties" : 
 			[
@@ -1183,235 +1091,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/lib/libmysqlclient.so"
-		},
-		{
-			"name" : "MYSQL_LIBS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_LIBS_L",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_LIBS_OTHER",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_LIBS_PATHS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_MODULE_NAME",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_PREFIX",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_STATIC_CFLAGS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_STATIC_CFLAGS_I",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_STATIC_CFLAGS_OTHER",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_STATIC_LIBDIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_STATIC_LIBS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_STATIC_LIBS_L",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_STATIC_LIBS_OTHER",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_STATIC_LIBS_PATHS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_VERSION",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_mysqlclient_INCLUDEDIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_mysqlclient_LIBDIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_mysqlclient_PREFIX",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "MYSQL_mysqlclient_VERSION",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
+			"value" : "/usr/lib/x86_64-linux-gnu/libmysqlclient.so"
 		},
 		{
 			"name" : "MyChatProject_BINARY_DIR",
@@ -1423,7 +1103,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug"
+			"value" : "/home/vawnwuyest/Documents/linux/linux-server/cmake-build-debug"
 		},
 		{
 			"name" : "MyChatProject_IS_TOP_LEVEL",
@@ -1447,7 +1127,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server"
+			"value" : "/home/vawnwuyest/Documents/linux/linux-server"
 		},
 		{
 			"name" : "OPENSSL_CRYPTO_LIBRARY",
@@ -1463,7 +1143,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/lib/libcrypto.so"
+			"value" : "/usr/lib/x86_64-linux-gnu/libcrypto.so"
 		},
 		{
 			"name" : "OPENSSL_INCLUDE_DIR",
@@ -1495,7 +1175,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/lib/libssl.so"
+			"value" : "/usr/lib/x86_64-linux-gnu/libssl.so"
 		},
 		{
 			"name" : "PKG_CONFIG_ARGN",
@@ -1527,7 +1207,19 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/sbin/pkg-config"
+			"value" : "PKG_CONFIG_EXECUTABLE-NOTFOUND"
+		},
+		{
+			"name" : "_CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "linker supports push/pop state"
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "TRUE"
 		},
 		{
 			"name" : "_OPENSSL_CFLAGS",
@@ -1539,7 +1231,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "-I/usr/include"
+			"value" : ""
 		},
 		{
 			"name" : "_OPENSSL_CFLAGS_I",
@@ -1575,46 +1267,10 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "1"
+			"value" : ""
 		},
 		{
 			"name" : "_OPENSSL_INCLUDEDIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "/usr/include"
-		},
-		{
-			"name" : "_OPENSSL_INCLUDE_DIRS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "/usr/include"
-		},
-		{
-			"name" : "_OPENSSL_LDFLAGS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "-L/usr/lib;-lssl;-lcrypto"
-		},
-		{
-			"name" : "_OPENSSL_LDFLAGS_OTHER",
 			"properties" : 
 			[
 				{
@@ -1635,31 +1291,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/lib"
-		},
-		{
-			"name" : "_OPENSSL_LIBRARIES",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "ssl;crypto"
-		},
-		{
-			"name" : "_OPENSSL_LIBRARY_DIRS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "/usr/lib"
+			"value" : ""
 		},
 		{
 			"name" : "_OPENSSL_LIBS",
@@ -1719,7 +1351,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "openssl"
+			"value" : ""
 		},
 		{
 			"name" : "_OPENSSL_PREFIX",
@@ -1731,7 +1363,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr"
+			"value" : ""
 		},
 		{
 			"name" : "_OPENSSL_STATIC_CFLAGS",
@@ -1743,7 +1375,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "-I/usr/include"
+			"value" : ""
 		},
 		{
 			"name" : "_OPENSSL_STATIC_CFLAGS_I",
@@ -1770,42 +1402,6 @@
 			"value" : ""
 		},
 		{
-			"name" : "_OPENSSL_STATIC_INCLUDE_DIRS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "/usr/include"
-		},
-		{
-			"name" : "_OPENSSL_STATIC_LDFLAGS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "-L/usr/lib;-lssl;-lcrypto;-ldl;-pthread"
-		},
-		{
-			"name" : "_OPENSSL_STATIC_LDFLAGS_OTHER",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "-pthread"
-		},
-		{
 			"name" : "_OPENSSL_STATIC_LIBDIR",
 			"properties" : 
 			[
@@ -1816,30 +1412,6 @@
 			],
 			"type" : "INTERNAL",
 			"value" : ""
-		},
-		{
-			"name" : "_OPENSSL_STATIC_LIBRARIES",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "ssl;crypto;dl"
-		},
-		{
-			"name" : "_OPENSSL_STATIC_LIBRARY_DIRS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "/usr/lib"
 		},
 		{
 			"name" : "_OPENSSL_STATIC_LIBS",
@@ -1899,79 +1471,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "3.4.1"
-		},
-		{
-			"name" : "_OPENSSL_openssl_INCLUDEDIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
 			"value" : ""
-		},
-		{
-			"name" : "_OPENSSL_openssl_LIBDIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "_OPENSSL_openssl_PREFIX",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "_OPENSSL_openssl_VERSION",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : ""
-		},
-		{
-			"name" : "__pkg_config_arguments__OPENSSL",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "QUIET;openssl"
-		},
-		{
-			"name" : "__pkg_config_checked_MYSQL",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "1"
 		},
 		{
 			"name" : "__pkg_config_checked__OPENSSL",
@@ -1984,50 +1484,6 @@
 			],
 			"type" : "INTERNAL",
 			"value" : "1"
-		},
-		{
-			"name" : "pkgcfg_lib__OPENSSL_crypto",
-			"properties" : 
-			[
-				{
-					"name" : "ADVANCED",
-					"value" : "1"
-				},
-				{
-					"name" : "HELPSTRING",
-					"value" : "Path to a library."
-				}
-			],
-			"type" : "FILEPATH",
-			"value" : "/usr/lib/libcrypto.so"
-		},
-		{
-			"name" : "pkgcfg_lib__OPENSSL_ssl",
-			"properties" : 
-			[
-				{
-					"name" : "ADVANCED",
-					"value" : "1"
-				},
-				{
-					"name" : "HELPSTRING",
-					"value" : "Path to a library."
-				}
-			],
-			"type" : "FILEPATH",
-			"value" : "/usr/lib/libssl.so"
-		},
-		{
-			"name" : "prefix_result",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : ""
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "/usr/lib"
 		}
 	],
 	"kind" : "cache",

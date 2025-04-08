@@ -55,7 +55,7 @@
 				{
 					"directoryIndex" : 1,
 					"id" : "chat_app::@145eef247bfb46b6828c",
-					"jsonFile" : "target-chat_app-Release-db12a53e7e098529144a.json",
+					"jsonFile" : "target-chat_app-Release-ee0c0d38a582bad52f25.json",
 					"name" : "chat_app",
 					"projectIndex" : 0
 				}
@@ -65,12 +65,12 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server/cmake-build-debug",
-		"source" : "/home/vawnwuyest/Documents/LinuxKernel/LinuxExam/linux-chat-server"
+		"build" : "/home/vawnwuyest/Documents/linux/linux-server/cmake-build-debug",
+		"source" : "/home/vawnwuyest/Documents/linux/linux-server"
 	},
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 8
+		"minor" : 7
 	}
 }
