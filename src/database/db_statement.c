@@ -63,6 +63,7 @@ bool db_execute(DbStatement *stmt)
     }
 
     success = mysql_stmt_execute(stmt->stmt) == 0;
+    return success;
 cleanup:
 
     if (stmt->binds)

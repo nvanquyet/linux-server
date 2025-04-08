@@ -16,7 +16,6 @@ bool add_group_member(int group_id, int user_id, char *error_message) {
         if (error_message != NULL) {
             snprintf(error_message, ERROR_MESSAGE_SIZE, "User %d is already a member of group %d", user_id, group_id);
         }
-        log_message(ERROR, "%s", error_message);
         return false;
     }
 
@@ -54,7 +53,6 @@ bool remove_group_member(int group_id, int user_id, char *error_message) {
         if (error_message != NULL) {
             snprintf(error_message, ERROR_MESSAGE_SIZE, "User %d is not a member of group %d", user_id, group_id);
         }
-        log_message(ERROR, "%s", error_message);
         return false;
     }
     DbStatement *stmt = db_prepare(SQL_REMOVE_GROUP_MEMBER);
@@ -222,7 +220,6 @@ int* get_group_members(int group_id, int* out_count) {
 }
 
 bool check_member_exists(int group_id, int user_id) {
-    log_message(INFO, "Executing query with group_id = %d, user_id = %d", group_id, user_id);
     DbStatement *stmt = db_prepare(SQL_CHECK_MEMBER_EXISTENCE);
     if (!stmt) {
         log_message(ERROR, "Failed to prepare statement for checking member existence");

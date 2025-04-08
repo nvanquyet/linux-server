@@ -9,14 +9,17 @@
 typedef struct Group {
     int id;
     char name[50];
+    char password[256];
     long created_at;
     User* created_by;
     int member_count;
 } Group;
 
 
-bool create_group(Group *self, const char *group_name, User *creator);
-bool delete_group(Group *self, User *user);
-Group *get_group(int group_id);
-
+Group *create_group(const char *group_name, const char *password, User *creator, char *error_message);
+bool delete_group(Group *self, User *user, char *error_message);
+Group *get_group_by_id(int group_id);
+Group *get_group(Group *self, char *errorMsg, size_t errorSize);
+Group *create_new_group(char* group_name, char *password);
+void broad_cast_group_noti(int group_id, Message *msg);
 #endif // GROUP_H

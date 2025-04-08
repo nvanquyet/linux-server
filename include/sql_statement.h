@@ -11,11 +11,11 @@
 #define SQL_LOGIN "SELECT id , password FROM users WHERE username = ?"
 
 // 📌 Group Queries
-#define SQL_CREATE_GROUP "INSERT INTO groups (group_name, created_by, created_at) VALUES (?, ?, ?)"
+#define SQL_CREATE_GROUP "INSERT INTO groups (group_name, created_by, created_at, password) VALUES (?, ?, ?, ?)"
 #define SQL_DELETE_GROUP "DELETE FROM groups WHERE group_id=?"
 #define SQL_GET_GROUP "SELECT * FROM groups WHERE group_id=?"
 #define SQL_GET_ALL_GROUPS "SELECT * FROM groups ORDER BY create_at DESC"
-
+#define SQL_FIND_GROUP_BY_NAME "SELECT * FROM groups WHERE group_name = ?"
 // 📌 GroupMember Queries
 #define SQL_ADD_GROUP_MEMBER "INSERT INTO group_members (group_id, user_id, joined_at, role) VALUES (?, ?, ?, ?)"
 #define SQL_REMOVE_GROUP_MEMBER "DELETE FROM group_members WHERE group_id=? AND user_id=?"
