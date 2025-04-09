@@ -354,8 +354,8 @@ void server_create_group(Session* session, Message* msg) {
         message_write_bool(message, true);
         message_write_int(message, newGroup->id);
         message_write_string(message, newGroup->name);
-        message_write_string(message, "Group created successfully");
         // Optional: free newGroup if not needed
+        //save to db
     }
     free(newGroup);
     session_send_message(session, message);
@@ -406,7 +406,10 @@ void server_handle_join_group(Session* session, Message* msg) {
     if (!joined) {
         message_write_string(message, error_message);
     } else {
-        message_write_string(message, "Joined group successfully");
+        message_write_int(message, group->id);
+        message_write_string(message, group->name);
+        //last-message
+        message_write_string(message, "Group joined successfully");
         // Gửi thông báo đến các thành viên trong nhóm
         User *user = findUserById(user_id);
         if (user) {
@@ -462,7 +465,7 @@ void server_handle_leave_group(Session* session, Message* msg) {
         message_write_string(message, error_message);
         log_message(WARN, "User %d failed to leave group %d: %s", user_id, group_id, error_message);
     } else {
-        message_write_string(message, "Left group successfully");
+        message_write_int(message, group->id);
         log_message(INFO, "User %d left group %d", user_id, group_id);
 
         // Gửi thông báo đến các thành viên khác trong nhóm
@@ -489,6 +492,11 @@ void server_receive_message(Session* session, Message* msg) {
     int sender_id = (int) message_read_int(msg);
     int receiver_id = (int) message_read_int(msg);
     char content[1024];
+    char sender_name[1024];
+    if (!message_read_string(msg, sender_name, sizeof(sender_name))) {
+        log_message(ERROR, "Failed to read data");
+        return;
+    }
     if (!message_read_string(msg, content, sizeof(content))) {
         log_message(ERROR, "Failed to read data");
         return;
@@ -496,6 +504,16 @@ void server_receive_message(Session* session, Message* msg) {
     save_private_message(sender_id, receiver_id, content);
     //send to other client
     //session_send_message(session, msg);
+    msg = message_create(USER_MESSAGE);
+    if (msg == NULL) {
+        log_message(ERROR, "Failed to create message");
+        return;
+    }
+    msg->position = 0;
+    message_write_int(msg, sender_id);
+    message_write_int(msg, receiver_id);
+    message_write_string(msg, sender_name);
+    message_write_string(msg, content);
     session->service->direct_message(receiver_id, msg);
 }
 void server_delete_group(Session* session, Message* msg) {
@@ -564,6 +582,18 @@ void server_receive_group_message(Session* session, Message* msg) {
     int sender_id = (int) message_read_int(msg);
     int group_id = (int) message_read_int(msg);
     char content[1024];
+    char sender_name[1024];
+    Group *group = get_group_by_id(group_id);
+    if (!group)
+    {
+        log_message(ERROR, "Group with ID %d not found", group_id);
+        message_write_bool(msg, false);
+        message_write_string(msg, "Group not found");
+    }
+    if (!message_read_string(msg, sender_name, sizeof(sender_name))) {
+        log_message(ERROR, "Failed to read data");
+        return;
+    }
     if (!message_read_string(msg, content, sizeof(content))) {
         log_message(ERROR, "Failed to read data");
         return;
@@ -572,8 +602,17 @@ void server_receive_group_message(Session* session, Message* msg) {
     log_message(INFO, "User %d is member of group %d", group_id, sender_id);
     if (is_member) {
         save_group_message(sender_id, group_id, content);
-        //session_send_message(session, msg);
-        //broadcast to all members of gtoups
+        free(msg);
+        msg = message_create(GROUP_MESSAGE);
+        if (msg == NULL) {
+            log_message(ERROR, "Failed to create message");
+            return;
+        }
+        message_write_int(msg, sender_id);
+        message_write_int(msg, group_id);
+        message_write_string(msg, group->name);
+        message_write_string(msg, sender_name);
+        message_write_string(msg, content);
         broad_cast_group_noti(group_id, msg);
     } else {
         Message* mess = message_create(GROUP_MESSAGE);

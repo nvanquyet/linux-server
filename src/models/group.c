@@ -61,6 +61,11 @@ Group *create_group(const char *group_name, const char *password, User *creator,
         free(group);
         return NULL;
     }
+    log_message(INFO, "[DEBUG] Full SQL:\nINSERT INTO `groups` (group_name, created_by, created_at, password) VALUES ('%s', %d, %ld, '%s')\n",
+            group->name,
+            creator->id,
+            group->created_at,
+            group->password);
 
     if (!db_execute(stmt)) {
         snprintf(error_message, 256, "Failed to execute create group query");

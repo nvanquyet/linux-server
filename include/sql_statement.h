@@ -12,16 +12,16 @@
 #define SQL_LOGIN "SELECT id , password FROM users WHERE username = ?"
 
 // 📌 Group Queries
-#define SQL_CREATE_GROUP "INSERT INTO groups (group_name, created_by, created_at, password) VALUES (?, ?, ?, ?)"
-#define SQL_DELETE_GROUP "DELETE FROM groups WHERE group_id=?"
-#define SQL_GET_GROUP "SELECT * FROM groups WHERE group_id=?"
-#define SQL_GET_ALL_GROUPS "SELECT * FROM groups ORDER BY create_at DESC"
-#define SQL_FIND_GROUP_BY_NAME "SELECT * FROM groups WHERE group_name = ?"
+#define SQL_CREATE_GROUP "INSERT INTO `groups` (group_name, created_by, created_at, password) VALUES (?, ?, FROM_UNIXTIME(?), ?)"
+#define SQL_DELETE_GROUP "DELETE FROM `groups` WHERE group_id=?"
+#define SQL_GET_GROUP "SELECT * FROM `groups` WHERE group_id=?"
+#define SQL_GET_ALL_GROUPS "SELECT * FROM `groups` ORDER BY create_at DESC"
+#define SQL_FIND_GROUP_BY_NAME "SELECT * FROM `groups` WHERE group_name = ?"
 // 📌 GroupMember Queries
-#define SQL_ADD_GROUP_MEMBER "INSERT INTO group_members (group_id, user_id, joined_at, role) VALUES (?, ?, ?, ?)"
+#define SQL_ADD_GROUP_MEMBER "INSERT INTO group_members (group_id, user_id, joined_at, role) VALUES (?, ?, FROM_UNIXTIME(?), ?)"
 #define SQL_REMOVE_GROUP_MEMBER "DELETE FROM group_members WHERE group_id=? AND user_id=?"
 #define SQL_GET_GROUP_MEMBERS "SELECT * FROM group_members WHERE group_id=?"
-#define SQL_GET_GROUPS_BY_USER "SELECT g.group_id, g.group_name, g.created_at, g.created_by FROM groups g JOIN group_members gm ON g.group_id = gm.group_id WHERE gm.user_id=? ORDER BY g.created_at DESC"
+#define SQL_GET_GROUPS_BY_USER "SELECT g.group_id, g.group_name, g.created_at, g.created_by FROM `groups` g JOIN group_members gm ON g.group_id = gm.group_id WHERE gm.user_id=? ORDER BY g.created_at DESC"
 #define SQL_UPDATE_MEMBER_ROLE "UPDATE group_members SET role=? WHERE group_id=? AND user_id=?"
 #define SQL_CHECK_MEMBER_EXISTENCE "SELECT COUNT(*) FROM group_members WHERE group_id = ? AND user_id = ?"
 
