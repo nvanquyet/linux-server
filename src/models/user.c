@@ -672,3 +672,55 @@ User* get_all_users(int* count) {
     db_result_set_free(result);
     return users;
 }
+
+User* search_user(char *user_name, int *count)
+{
+    *count = 0;
+    DbStatement* stmt = db_prepare(SQL_GET_ALL_USERS_BY_USERNAME);
+    if (!stmt) {
+        log_message(ERROR, "Failed to prepare statement for getting all users");
+        return NULL;
+    }
+    char like_pattern[256];
+    snprintf(like_pattern, sizeof(like_pattern), "%%%s%%", user_name);
+    if (!db_bind_string(stmt, 0, like_pattern)) {
+        log_message(ERROR, "Failed to bind current user id");
+        db_statement_free(stmt);
+        return NULL;
+    }
+
+    DbResultSet* result = db_execute_query(stmt);
+    db_statement_free(stmt);
+    if (!result || result->row_count == 0) {
+        log_message(INFO, "No users found in the database");
+        if (result) db_result_set_free(result);
+        return NULL;
+    }
+
+    User* users = (User*)malloc(sizeof(User) * result->row_count);
+    if (!users) {
+        log_message(ERROR, "Memory allocation failed for users");
+        db_result_set_free(result);
+        return NULL;
+    }
+    memset(users, 0, sizeof(User) * result->row_count);
+    for (int i = 0; i < result->row_count; i++) {
+        DbResultRow* row = result->rows[i];
+        User* user = &users[i];
+
+        for (int j = 0; j < row->field_count; j++) {
+            DbResultField* field = row->fields[j];
+            if (!field) continue;
+            if (strcmp(field->key, "id") == 0) {
+                user->id = *(int*)field->value;
+            } else if (strcmp(field->key, "username") == 0) {
+                user->username = strdup((char*)field->value);
+            }
+        }
+    }
+
+    *count = result->row_count;
+    db_result_set_free(result);
+    return users;
+
+}

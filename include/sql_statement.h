@@ -8,6 +8,7 @@
 #define SQL_GET_USER_BY_ID "SELECT * FROM users WHERE id=?"
 #define SQL_GET_ALL_USERS_EXCEPT "SELECT id, username, password, online, last_attendance_at FROM users WHERE id != ?"
 #define SQL_GET_ALL_USERS "SELECT id, username, password, online, last_attendance_at FROM users"
+#define SQL_GET_ALL_USERS_BY_USERNAME "SELECT id, username FROM users WHERE username LIKE ?"
 #define SQL_LOGIN "SELECT id , password FROM users WHERE username = ?"
 
 // 📌 Group Queries
@@ -27,33 +28,45 @@
 // 📌 Message Queries
 #define SQL_GET_CHAT_HISTORIES_BY_USER \
 "SELECT " \
-"  CASE " \
-"    WHEN group_id IS NOT NULL THEN -group_id " \
-"    WHEN sender_id = ? THEN receiver_id " \
-"    ELSE sender_id " \
-"  END AS chat_id, " \
-"  MAX(timestamp) AS last_time, " \
-"  SUBSTRING_INDEX(message_content, '\n', 1) AS last_message, " \
-"  sender_id, " \
-"  u.username AS sender_name " /* Thêm JOIN để lấy tên người gửi */ \
-"FROM messages m " \
-"LEFT JOIN users u ON u.id = m.sender_id " /* JOIN với bảng users để lấy tên người gửi */ \
-"WHERE sender_id = ? " \
-"   OR receiver_id = ? " \
-"   OR group_id IN (SELECT group_id FROM group_members WHERE user_id = ?) " \
-"GROUP BY chat_id " \
-"ORDER BY last_time DESC"
+"  sub.chat_id, " \
+"  UNIX_TIMESTAMP(m.timestamp) AS last_time, " \
+"  SUBSTRING_INDEX(m.message_content, '\n', 1) AS last_message, " \
+"  m.sender_id, " \
+"  u.username AS sender_name " \
+"FROM ( " \
+"  SELECT " \
+"    CASE " \
+"      WHEN group_id IS NOT NULL THEN -group_id " \
+"      WHEN sender_id = ? THEN receiver_id " \
+"      ELSE sender_id " \
+"    END AS chat_id, " \
+"    MAX(timestamp) AS last_time " \
+"  FROM messages " \
+"  WHERE sender_id = ? " \
+"     OR receiver_id = ? " \
+"     OR group_id IN (SELECT group_id FROM group_members WHERE user_id = ?) " \
+"  GROUP BY chat_id " \
+") sub " \
+"JOIN messages m ON ( " \
+"  (CASE " \
+"    WHEN m.group_id IS NOT NULL THEN -m.group_id " \
+"    WHEN m.sender_id = ? THEN m.receiver_id " \
+"    ELSE m.sender_id " \
+"  END = sub.chat_id AND m.timestamp = sub.last_time) " \
+") " \
+"LEFT JOIN users u ON u.id = m.sender_id " \
+"ORDER BY sub.last_time DESC"
 
 #define SQL_GET_MESSAGES_WITH_USER \
-"SELECT m.sender_id, u.username AS sender_name, m.message_content, m.timestamp \
+"SELECT m.sender_id, u.username AS sender_name, m.message_content, UNIX_TIMESTAMP(m.timestamp) AS timestamp \
 FROM messages m \
 JOIN users u ON m.sender_id = u.id \
 WHERE ((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?)) \
-AND m.group_id = 0 \
+AND m.group_id IS NULL \
 ORDER BY m.timestamp ASC"
 
 #define SQL_GET_MESSAGES_WITH_GROUP \
-"SELECT m.sender_id, u.username AS sender_name, m.message_content, m.timestamp \
+"SELECT m.sender_id, u.username AS sender_name, m.message_content, UNIX_TIMESTAMP(m.timestamp) AS timestamp \
 FROM messages m \
 JOIN users u ON m.sender_id = u.id \
 WHERE m.group_id = ? \

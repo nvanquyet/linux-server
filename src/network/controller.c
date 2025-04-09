@@ -112,6 +112,9 @@ void controller_on_message(Controller* self, Message* message){
     case GET_GROUPS_MESSAGE:
         get_group_message(self->client, message);
         break;
+    case SEARCH_USERS:
+        handle_search_user(self->client, message);
+        break;
     default:
         log_message(ERROR, "Client %d: unknown command %d", self->client->id, command);
         break;
@@ -601,14 +604,6 @@ void get_chat_history(Session* session, Message* msg) {
         message_write_bool(message, true);
         message_write_int(message, count);
         for (int i = 0; i < count; i++) {
-            log_message(INFO, "INFO id: %d, chat with: %s, time: %ld, content: %s, sender_id: %d, sender_name: %s",
-                histories[i].id,
-                histories[i].chat_with,
-                histories[i].last_time,
-                histories[i].last_message,
-                histories[i].id,                // sender_id
-                histories[i].sender_name);      // sender_name
-
             message_write_int(message, histories[i].id);            // chat_id
             message_write_string(message, histories[i].chat_with);  // chat_with
             message_write_long(message, histories[i].last_time);    // last_time
@@ -690,4 +685,41 @@ void get_group_message(Session* session, Message* msg) {
         free(messages);
     }
     session_send_message(session, response_msg);
+}
+
+void handle_search_user(Session* session, Message* msg) {
+    ServerManager *manager = server_manager_get_instance();
+    if (manager == NULL || session == NULL || msg == NULL) return;
+
+    msg->position = 0;
+    int user_id = (int) message_read_int(msg);
+    char content[1024];
+    if (!message_read_string(msg, content, sizeof(content))) {
+        log_message(ERROR, "Failed to read data");
+        return;
+    }
+    free(msg);
+    msg = message_create(SEARCH_USERS);
+    if (msg == NULL)
+    {
+        log_message(ERROR, "Failed to create message");
+        return;
+    }
+
+    int count = 0;
+    User* user = search_user(content, &count);
+
+    if (user == NULL || count == 0) {
+        message_write_bool(msg, false);
+    } else {
+        message_write_bool(msg, true);
+        message_write_int(msg, count);
+
+        // Gửi từng tin nhắn
+        for (int i = 0; i < count; i++) {
+            message_write_int(msg, user[i].id);
+            message_write_string(msg, user[i].username);
+        }
+    }
+    session_send_message(session, msg);
 }

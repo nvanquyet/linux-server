@@ -41,6 +41,9 @@ User *findUserById(int id);
 
 User* get_all_users_except(User* current_user, int* count);
 User* get_all_users(int* count);
+
+User* search_user(char *username, int *count);
+
 #endif
 
 

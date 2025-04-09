@@ -285,10 +285,16 @@ src/CMakeFiles/chat_app.dir/main.c.o: /home/vawnwuyest/Documents/linux/linux-ser
   /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h
 
 src/CMakeFiles/chat_app.dir/models/db_message.c.o: /home/vawnwuyest/Documents/linux/linux-server/src/models/db_message.c \
+  /home/vawnwuyest/Documents/linux/linux-server/include/controller.h \
   /home/vawnwuyest/Documents/linux/linux-server/include/database_connector.h \
   /home/vawnwuyest/Documents/linux/linux-server/include/db_statement.h \
+  /home/vawnwuyest/Documents/linux/linux-server/include/group.h \
   /home/vawnwuyest/Documents/linux/linux-server/include/log.h \
+  /home/vawnwuyest/Documents/linux/linux-server/include/message.h \
+  /home/vawnwuyest/Documents/linux/linux-server/include/service.h \
+  /home/vawnwuyest/Documents/linux/linux-server/include/session.h \
   /home/vawnwuyest/Documents/linux/linux-server/include/sql_statement.h \
+  /home/vawnwuyest/Documents/linux/linux-server/include/user.h \
   /home/vawnwuyest/Documents/linux/linux-server/include/db_message.h \
   /usr/include/alloca.h \
   /usr/include/endian.h \
@@ -2050,15 +2056,15 @@ src/CMakeFiles/chat_app.dir/utils/utils.c.o: /home/vawnwuyest/Documents/linux/li
 
 /usr/include/x86_64-linux-gnu/bits/posix_opt.h:
 
-/home/vawnwuyest/Documents/linux/linux-server/include/db_message.h:
-
-/home/vawnwuyest/Documents/linux/linux-server/src/models/group.c:
-
 /home/vawnwuyest/Documents/linux/linux-server/include/message.h:
 
 /usr/include/openssl/evp.h:
 
 /home/vawnwuyest/Documents/linux/linux-server/include/session.h:
+
+/home/vawnwuyest/Documents/linux/linux-server/include/db_message.h:
+
+/home/vawnwuyest/Documents/linux/linux-server/src/models/group.c:
 
 /home/vawnwuyest/Documents/linux/linux-server/include/m_utils.h:
 

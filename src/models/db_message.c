@@ -9,6 +9,9 @@
 #include <sql_statement.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "group.h"
+
 ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
     DbStatement* stmt = db_prepare(SQL_GET_CHAT_HISTORIES_BY_USER);
     if (!stmt) {
@@ -17,10 +20,11 @@ ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
     }
 
     // Bind đúng thứ tự các dấu `?` trong SQL
-    db_bind_int(stmt, 1, user_id); // dùng trong CASE
-    db_bind_int(stmt, 2, user_id); // sender_id
-    db_bind_int(stmt, 3, user_id); // receiver_id
-    db_bind_int(stmt, 4, user_id); // group_members
+    db_bind_int(stmt, 0, user_id); // CASE WHEN sender_id = ?
+    db_bind_int(stmt, 1, user_id); // WHERE sender_id = ?
+    db_bind_int(stmt, 2, user_id); // WHERE receiver_id = ?
+    db_bind_int(stmt, 3, user_id); // WHERE group_id IN ...
+    db_bind_int(stmt, 4, user_id); // JOIN CASE WHEN m.sender_id = ?
 
     DbResultSet* result = db_execute_query(stmt);
     db_statement_free(stmt);
@@ -51,9 +55,16 @@ ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
 
                 // Format `chat_with` = "4" (user) hoặc "G5" (group)
                 if (history->id < 0) {
-                    snprintf(history->chat_with, sizeof(history->chat_with), "G%d", -history->id);
+                    Group* g = get_group_by_id(-histories->id);
+                    snprintf(history->chat_with, sizeof(history->chat_with), g->name);
+                    free(g);
                 } else {
-                    snprintf(history->chat_with, sizeof(history->chat_with), "%d", history->id);
+                    if (history->id != user_id) {
+                        User* u = findUserById(history->id);
+                        snprintf(history->chat_with, sizeof(history->chat_with), "%s", u->username);
+                        free(u);
+                    }
+
                 }
             } else if (strcmp(field->key, "last_message") == 0) {
                 // Kiểm tra kích thước để tránh lỗi tràn bộ nhớ

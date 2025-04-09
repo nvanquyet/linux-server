@@ -79,4 +79,10 @@ src/CMakeFiles/chat_app.dir/models/db_message.c.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /home/vawnwuyest/Documents/linux/linux-server/include/sql_statement.h \
- /usr/include/string.h /usr/include/strings.h
+ /usr/include/string.h /usr/include/strings.h \
+ /home/vawnwuyest/Documents/linux/linux-server/include/group.h \
+ /home/vawnwuyest/Documents/linux/linux-server/include/user.h \
+ /home/vawnwuyest/Documents/linux/linux-server/include/session.h \
+ /home/vawnwuyest/Documents/linux/linux-server/include/controller.h \
+ /home/vawnwuyest/Documents/linux/linux-server/include/service.h \
+ /home/vawnwuyest/Documents/linux/linux-server/include/message.h

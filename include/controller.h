@@ -34,7 +34,7 @@ void controller_on_message(Controller* controller, Message* msg);
 void handle_login(Session* session, Message* message);
 void handle_logout(Session* session, Message* message);
 void handle_register(Session* session, Message* message);
-
+void handle_search_user(Session* session, Message* msg);
 void get_users(Session* session);
 void get_joined_groups(Session* session, Message* msg);
 void server_handle_join_group(Session* session, Message* msg);
