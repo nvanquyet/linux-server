@@ -561,7 +561,7 @@ void server_receive_group_message(Session* session, Message* msg) {
     char content[1024];
     char sender_name[1024];
     Group *group = get_group_by_id(group_id);
-    if (!group)
+    if (!group || group->name == NULL)
     {
         log_message(ERROR, "Group with ID %d not found", group_id);
         message_write_bool(msg, false);
@@ -598,7 +598,6 @@ void server_receive_group_message(Session* session, Message* msg) {
     message_write_bool(msg, false);
     message_write_string(msg, "You arent not member of group");
     session_send_message(session, msg);
-
 }
 void get_chat_history(Session* session, Message* msg) {
     ServerManager *manager = server_manager_get_instance();
