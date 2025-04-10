@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "group.h"
+#include "group_member.h"
 
 ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
     DbStatement* stmt = db_prepare(SQL_GET_CHAT_HISTORIES_BY_USER);
@@ -55,6 +56,11 @@ ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
 
                 // Format `chat_with` = "4" (user) hoặc "G5" (group)
                 if (history->id < 0) {
+                    bool is_member = check_member_exists(-history->id, user_id);
+                    if (!is_member)
+                    {
+                        continue;
+                    }
                     Group* g = get_group_by_id(-history->id);
                     snprintf(history->chat_with, sizeof(history->chat_with), g->name);
                     free(g);
