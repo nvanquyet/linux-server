@@ -82,6 +82,8 @@ void broadcast_message(int user_id[], int num_users, Message *msg) {
     }
 }
 
+
+
 void direct_message(int user_id, Message* msg) {
     User *user = server_manager_find_user_by_id(user_id);
     if (user != NULL && user->session != NULL) {

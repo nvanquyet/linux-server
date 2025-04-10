@@ -548,7 +548,7 @@ void server_receive_message(Session* session, Message* msg) {
     message_write_string(msg, sender_name);
     message_write_string(msg, content);
     session->service->direct_message(receiver_id, msg);
-    //session_send_message(session, msg);
+    session_send_message(session, msg);
 }
 void server_receive_group_message(Session* session, Message* msg) {
     ServerManager *manager = server_manager_get_instance();
