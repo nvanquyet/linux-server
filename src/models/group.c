@@ -283,3 +283,13 @@ void broad_cast_to_group(int group_id, Message *msg) {
     broadcast_message(member_ids, count, msg);
     free(member_ids);
 }
+void broad_cast_to_group_except(int group_id, int excep_id, Message *msg) {
+    int count = 0;
+    int* member_ids = get_group_members(group_id, &count);
+    if (!member_ids || count == 0) {
+        log_message(WARN, "Không tìm thấy thành viên nào trong group_id = %d", group_id);
+        return;
+    }
+    broadcast_message_except(member_ids, count, msg, excep_id);
+    free(member_ids);
+}

@@ -598,7 +598,7 @@ void server_receive_group_message(Session* session, Message* msg) {
         message_write_string(response, group->name);
         message_write_string(response, sender_name);
         message_write_string(response, content);
-        broad_cast_to_group(group_id, response);
+        broad_cast_to_group_except(group_id, sender_id, response);
         return;
     }
 

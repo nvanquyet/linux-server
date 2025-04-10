@@ -21,6 +21,7 @@ void destroyService(Service* service);
 void service_login_success(Service* service);
 void service_server_message(Session* session, char *content);
 void broadcast_message(int user_id[], int num_users, Message *msg);
+void broadcast_message_except(int user_id[], int num_users, Message *msg, int excep_id);
 void direct_message(int user_id, Message *msg);
 
 #endif

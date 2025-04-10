@@ -81,7 +81,14 @@ void broadcast_message(int user_id[], int num_users, Message *msg) {
         }
     }
 }
-
+void broadcast_message_except(int user_id[], int num_users, Message *msg, int excep_id){
+    for (int i = 0; i < num_users; i++) {
+        User *user = server_manager_find_user_by_id(user_id[i]);
+        if (user != NULL && user->id != excep_id && user->session != NULL) {
+            session_send_message(user->session, message_clone(msg));
+        }
+    }
+}
 
 
 void direct_message(int user_id, Message* msg) {
