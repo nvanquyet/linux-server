@@ -167,7 +167,7 @@ int* get_group_members(int group_id, int* out_count) {
         return NULL;
     }
 
-    if (!db_bind_int(stmt, 1, group_id)) {
+    if (!db_bind_int(stmt, 0, group_id)) {
         log_message(ERROR, "Failed to bind group_id parameter");
         db_statement_free(stmt);
         return NULL;

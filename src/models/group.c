@@ -276,7 +276,6 @@ Group *get_group(Group *self, char *errorMsg, size_t errorSize) {
 void broad_cast_to_group(int group_id, Message *msg) {
     int count = 0;
     int* member_ids = get_group_members(group_id, &count);
-    log_message(WARN, "group_id = %d member %d", group_id, count);
     if (!member_ids || count == 0) {
         log_message(WARN, "Không tìm thấy thành viên nào trong group_id = %d", group_id);
         return;
