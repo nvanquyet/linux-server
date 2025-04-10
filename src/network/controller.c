@@ -513,13 +513,12 @@ void server_delete_group(Session* session, Message* msg) {
         snprintf(noti, sizeof(noti), "%s delete group %s", user->username, group->name);
         message_write_string(res, noti);
         for (int i = 0; i < count; ++i) {
-            Message *m = message_clone(m);
+            Message *m = message_clone(res);
             direct_message(member_ids[i], m);
         }
-
         free(member_ids);
     }
-    session_send_message(session, res);
+    //session_send_message(session, res);
 }
 
 void server_receive_message(Session* session, Message* msg) {

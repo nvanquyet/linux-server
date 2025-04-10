@@ -151,7 +151,6 @@ Group **find_groups_by_user(int user_id, int *out_count) {
 
     *out_count = count;
     db_result_set_free(result);
-    log_message(INFO, "Retrieved %d groups for user %d", count, user_id);
     return group_array;
 }
 int* get_group_members(int group_id, int* out_count) {
