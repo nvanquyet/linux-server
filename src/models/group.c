@@ -114,6 +114,16 @@ bool delete_group(Group *self, User *user, char *error_message) {
         db_statement_free(stmt);
         return false;
     }
+    if (!db_bind_int(stmt, 1, self->id)) {
+        snprintf(error_message, 256, "Failed to bind group_id parameter");
+        db_statement_free(stmt);
+        return false;
+    }
+    if (!db_bind_int(stmt, 2, self->id)) {
+        snprintf(error_message, 256, "Failed to bind group_id parameter");
+        db_statement_free(stmt);
+        return false;
+    }
 
     if (!db_execute(stmt)) {
         snprintf(error_message, 256, "Failed to execute group deletion query");

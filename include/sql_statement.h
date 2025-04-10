@@ -13,7 +13,11 @@
 
 // 📌 Group Queries
 #define SQL_CREATE_GROUP "INSERT INTO `groups` (group_name, created_by, created_at, password) VALUES (?, ?, FROM_UNIXTIME(?), ?)"
-#define SQL_DELETE_GROUP "DELETE FROM `groups` WHERE group_id=?"
+#define SQL_DELETE_GROUP \
+"DELETE FROM group_members WHERE group_id = ?; " \
+"DELETE FROM messages WHERE group_id = ?; " \
+"DELETE FROM `groups` WHERE group_id = ?;"
+
 #define SQL_GET_GROUP "SELECT * FROM `groups` WHERE group_id=?"
 #define SQL_GET_ALL_GROUPS "SELECT * FROM `groups` ORDER BY create_at DESC"
 #define SQL_FIND_GROUP_BY_NAME "SELECT * FROM `groups` WHERE group_name = ?"
