@@ -579,18 +579,18 @@ void server_receive_group_message(Session* session, Message* msg) {
     log_message(INFO, "User %d is member of group %d %s", group_id, sender_id, group->name);
     if (is_member) {
         save_group_message(sender_id, group_id, content);
-        msg = message_create(GROUP_MESSAGE);
-        if (msg == NULL) {
+        Message *respone = message_create(GROUP_MESSAGE);
+        if (respone == NULL) {
             log_message(ERROR, "Failed to create message");
             return;
         }
-        message_write_bool(msg, true);
-        message_write_int(msg, sender_id);
-        message_write_int(msg, group_id);
-        message_write_string(msg, group->name);
-        message_write_string(msg, sender_name);
-        message_write_string(msg, content);
-        broad_cast_to_group(group_id, msg);
+        message_write_bool(respone, true);
+        message_write_int(respone, sender_id);
+        message_write_int(respone, group_id);
+        message_write_string(respone, group->name);
+        message_write_string(respone, sender_name);
+        message_write_string(respone, content);
+        broad_cast_to_group(group_id, respone);
         return;
     }
     msg = message_create(GROUP_MESSAGE);
