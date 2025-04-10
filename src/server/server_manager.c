@@ -111,33 +111,6 @@ User *server_manager_find_user_by_id(int id)
     return NULL;
 }
 
-bool server_manager_remove_user_by_id(int id) {
-    ServerManager *manager = server_manager_get_instance();
-    pthread_rwlock_wrlock(&manager->lock_user); // Ghi lock
-
-    for (int i = 0; i < manager->user_count; i++) {
-        if (manager->users[i]->id == id) {
-            // Giải phóng user nếu cần
-            free(manager->users[i]);
-
-            // Dời các phần tử sau lên để lấp chỗ trống
-            for (int j = i; j < manager->user_count - 1; j++) {
-                manager->users[j] = manager->users[j + 1];
-            }
-
-            manager->users[manager->user_count - 1] = NULL;
-            manager->user_count--;
-
-            pthread_rwlock_unlock(&manager->lock_user);
-            return true; // Thành công
-        }
-    }
-
-    pthread_rwlock_unlock(&manager->lock_user);
-    return false; // Không tìm thấy
-}
-
-
 User *server_manager_find_user_by_username_internal(const char *username, bool skipLock) {
     ServerManager *manager = server_manager_get_instance();
     

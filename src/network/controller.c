@@ -224,7 +224,7 @@ void handle_logout(Session* session, Message* message) {
         log_message(ERROR, "Failed to create message");
         return;
     }
-    server_manager_remove_user_by_id(session->user->id);
+    server_manager_remove_user(session->user);
     msg->position = 0;
     message_write_bool(msg, true);
     session_send_message(session, msg);
