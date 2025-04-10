@@ -70,7 +70,7 @@ ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
                 // Kiểm tra kích thước để tránh lỗi tràn bộ nhớ
                 strncpy(history->last_message, (char*)field->value, sizeof(history->last_message) - 1);
             } else if (strcmp(field->key, "last_time") == 0) {
-                history->last_time = *(long*)field->value;
+                history->last_time = (*(long*)field->value) / 1000000;
             } else if (strcmp(field->key, "sender_name") == 0) {
                 // Thêm tên người gửi
                 strncpy(history->sender_name, (char*)field->value, sizeof(history->sender_name) - 1);
@@ -213,8 +213,7 @@ MessageData* get_chat_messages(int user_id, int chat_with_id, int group_id, int*
             }else if (strcmp(field->key, "message_content") == 0) {
                 m->content = strdup((char*)field->value);
             } else if (strcmp(field->key, "timestamp") == 0) {
-                m->timestamp = *(long*)field->value;
-                log_message(INFO, "Time: %ld", m->timestamp);
+                m->timestamp = (*(long*)field->value) / 1000000;
             }
         }
     }
