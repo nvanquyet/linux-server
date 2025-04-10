@@ -579,7 +579,6 @@ void server_receive_group_message(Session* session, Message* msg) {
     log_message(INFO, "User %d is member of group %d", group_id, sender_id);
     if (is_member) {
         save_group_message(sender_id, group_id, content);
-        free(msg);
         msg = message_create(GROUP_MESSAGE);
         if (msg == NULL) {
             log_message(ERROR, "Failed to create message");
