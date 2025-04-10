@@ -87,7 +87,6 @@ Group *create_group(const char *group_name, const char *password, User *creator,
     snprintf(error_message, 256, "Group created successfully");
     return group;
 }
-
 bool delete_group(Group *self, User *user, char *error_message) {
     if (!self) {
         snprintf(error_message, 256, "Group pointer is NULL");
@@ -103,35 +102,34 @@ bool delete_group(Group *self, User *user, char *error_message) {
         return false;
     }
 
-    DbStatement *stmt = db_prepare(SQL_DELETE_GROUP);
-    if (!stmt) {
-        snprintf(error_message, 256, "Failed to prepare delete group statement");
-        return false;
+    const char *queries[] = {
+        SQL_DELETE_GROUP_MEMBERS,
+        SQL_DELETE_MESSAGES,
+        SQL_DELETE_GROUP_ONLY
+    };
+
+    for (int i = 0; i < 3; i++) {
+        DbStatement *stmt = db_prepare(queries[i]);
+        if (!stmt) {
+            snprintf(error_message, 256, "Failed to prepare delete statement (%d)", i);
+            return false;
+        }
+
+        if (!db_bind_int(stmt, 0, self->id)) {
+            snprintf(error_message, 256, "Failed to bind group_id at step %d", i);
+            db_statement_free(stmt);
+            return false;
+        }
+
+        if (!db_execute(stmt)) {
+            snprintf(error_message, 256, "Execution failed at step %d", i);
+            db_statement_free(stmt);
+            return false;
+        }
+
+        db_statement_free(stmt);
     }
 
-    if (!db_bind_int(stmt, 0, self->id)) {
-        snprintf(error_message, 256, "Failed to bind group_id parameter");
-        db_statement_free(stmt);
-        return false;
-    }
-    if (!db_bind_int(stmt, 1, self->id)) {
-        snprintf(error_message, 256, "Failed to bind group_id parameter");
-        db_statement_free(stmt);
-        return false;
-    }
-    if (!db_bind_int(stmt, 2, self->id)) {
-        snprintf(error_message, 256, "Failed to bind group_id parameter");
-        db_statement_free(stmt);
-        return false;
-    }
-
-    if (!db_execute(stmt)) {
-        snprintf(error_message, 256, "Failed to execute group deletion query");
-        db_statement_free(stmt);
-        return false;
-    }
-
-    db_statement_free(stmt);
     snprintf(error_message, 256, "Group '%s' (ID: %d) deleted successfully", self->name, self->id);
     return true;
 }

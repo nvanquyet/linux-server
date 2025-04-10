@@ -499,7 +499,8 @@ void server_delete_group(Session* session, Message* msg) {
         session_send_message(session, res);
         return;
     }
-
+    int count = 0;
+    int* member_ids = get_group_members(group_id, &count);
     bool deleted = delete_group(group, user, error);
     message_write_bool(res, deleted);
     if (!deleted)
@@ -511,7 +512,11 @@ void server_delete_group(Session* session, Message* msg) {
         char noti[256];
         snprintf(noti, sizeof(noti), "%s delete group %s", user->username, group->name);
         message_write_string(res, noti);
-        broad_cast_to_group(group->id, res);
+        for (int i = 0; i < count; ++i) {
+            direct_message(member_ids[i], res);
+        }
+
+        free(member_ids);
     }
     session_send_message(session, res);
 }
