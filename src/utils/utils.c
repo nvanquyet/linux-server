@@ -141,75 +141,75 @@ bool validate_username_password(char *username, char *password)
         return false;
     }
 
-    size_t password_len = strlen(password);
-
-    if (password_len < 6 || password_len > 64)
-    {
-        log_message(ERROR, "Password validation failed: Password must be between 6-64 characters");
-        return false;
-    }
-
-    bool has_digit = false;
-    bool has_lowercase = false;
-    bool has_uppercase = false;
-    bool has_invalid_char = false;
-
-    for (size_t i = 0; i < password_len; i++)
-    {
-        char c = password[i];
-
-        if (c >= '0' && c <= '9')
-        {
-            has_digit = true;
-        }
-        else if (c >= 'a' && c <= 'z')
-        {
-            has_lowercase = true;
-        }
-        else if (c >= 'A' && c <= 'Z')
-        {
-            has_uppercase = true;
-        }
-        else if (c == ' ')
-        {
-
-            log_message(ERROR, "Password validation failed: Password cannot contain spaces");
-            return false;
-        }
-        else
-        {
-
-            if (strchr("!@#$%^&*()_+-=[]{};:'\",.<>/?\\|", c) == NULL)
-            {
-                has_invalid_char = true;
-                break;
-            }
-        }
-    }
-
-    if (!has_digit)
-    {
-        log_message(ERROR, "Password validation failed: Password must contain at least one digit");
-        return false;
-    }
-
-    if (!has_lowercase)
-    {
-        log_message(ERROR, "Password validation failed: Password must contain at least one lowercase letter");
-        return false;
-    }
-
-    if (!has_uppercase)
-    {
-        log_message(ERROR, "Password validation failed: Password must contain at least one uppercase letter");
-        return false;
-    }
-
-    if (has_invalid_char)
-    {
-        log_message(ERROR, "Password validation failed: Password contains invalid characters");
-        return false;
-    }
+    // size_t password_len = strlen(password);
+    //
+    // if (password_len < 6 || password_len > 64)
+    // {
+    //     log_message(ERROR, "Password validation failed: Password must be between 6-64 characters");
+    //     return false;
+    // }
+    //
+    // bool has_digit = false;
+    // bool has_lowercase = false;
+    // bool has_uppercase = false;
+    // bool has_invalid_char = false;
+    //
+    // for (size_t i = 0; i < password_len; i++)
+    // {
+    //     char c = password[i];
+    //
+    //     if (c >= '0' && c <= '9')
+    //     {
+    //         has_digit = true;
+    //     }
+    //     else if (c >= 'a' && c <= 'z')
+    //     {
+    //         has_lowercase = true;
+    //     }
+    //     else if (c >= 'A' && c <= 'Z')
+    //     {
+    //         has_uppercase = true;
+    //     }
+    //     else if (c == ' ')
+    //     {
+    //
+    //         log_message(ERROR, "Password validation failed: Password cannot contain spaces");
+    //         return false;
+    //     }
+    //     else
+    //     {
+    //
+    //         if (strchr("!@#$%^&*()_+-=[]{};:'\",.<>/?\\|", c) == NULL)
+    //         {
+    //             has_invalid_char = true;
+    //             break;
+    //         }
+    //     }
+    // }
+    //
+    // if (!has_digit)
+    // {
+    //     log_message(ERROR, "Password validation failed: Password must contain at least one digit");
+    //     return false;
+    // }
+    //
+    // if (!has_lowercase)
+    // {
+    //     log_message(ERROR, "Password validation failed: Password must contain at least one lowercase letter");
+    //     return false;
+    // }
+    //
+    // if (!has_uppercase)
+    // {
+    //     log_message(ERROR, "Password validation failed: Password must contain at least one uppercase letter");
+    //     return false;
+    // }
+    //
+    // if (has_invalid_char)
+    // {
+    //     log_message(ERROR, "Password validation failed: Password contains invalid characters");
+    //     return false;
+    // }
 
     return true;
 }
