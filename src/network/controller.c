@@ -576,7 +576,7 @@ void server_receive_group_message(Session* session, Message* msg) {
         return;
     }
     bool is_member = check_member_exists(group_id, sender_id);
-    log_message(INFO, "User %d is member of group %d", group_id, sender_id);
+    log_message(INFO, "User %d is member of group %d %s", group_id, sender_id, group->name);
     if (is_member) {
         save_group_message(sender_id, group_id, content);
         msg = message_create(GROUP_MESSAGE);
