@@ -77,10 +77,11 @@ void broadcast_message(int user_id[], int num_users, Message *msg) {
     for (int i = 0; i < num_users; i++) {
         User *user = server_manager_find_user_by_id(user_id[i]);
         if (user != NULL && user->session != NULL) {
-            log_message(DEBUG, "Broadcasting message from user %d %s", user->id, msg == NULL ? "NULL" : "NOTNULL");
+            log_message(INFO, "Broadcasting message from user %d %s", user->id, msg == NULL ? "NULL" : "NOTNULL");
             session_send_message(user->session, msg);
         }
     }
+    free(msg);
 }
 
 void direct_message(int user_id, Message* msg) {
