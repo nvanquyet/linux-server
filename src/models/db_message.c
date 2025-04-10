@@ -71,6 +71,7 @@ ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
                 strncpy(history->last_message, (char*)field->value, sizeof(history->last_message) - 1);
             } else if (strcmp(field->key, "last_time") == 0) {
                 history->last_time = (*(long*)field->value) / 1000000;
+                log_message(INFO, "Last_time: %ld", history->last_time);
             } else if (strcmp(field->key, "sender_name") == 0) {
                 // Thêm tên người gửi
                 strncpy(history->sender_name, (char*)field->value, sizeof(history->sender_name) - 1);
@@ -214,6 +215,7 @@ MessageData* get_chat_messages(int user_id, int chat_with_id, int group_id, int*
                 m->content = strdup((char*)field->value);
             } else if (strcmp(field->key, "timestamp") == 0) {
                 m->timestamp = (*(long*)field->value) / 1000000;
+                log_message(INFO, "Time: %ld", m->timestamp = (*(long*)field->value) / 1000000);
             }
         }
     }
