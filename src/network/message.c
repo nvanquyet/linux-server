@@ -574,3 +574,30 @@ char *message_read_utf(Message *msg)
     str[str_len] = '\0';
     return str;
 }
+Message* message_clone(Message *origin) {
+    if (!origin || !origin->buffer || origin->size == 0) {
+        log_message(ERROR, "message_clone: origin is NULL or invalid buffer");
+        return NULL;
+    }
+
+    Message *clone = malloc(sizeof(Message));
+    if (!clone) {
+        log_message(ERROR, "message_clone: failed to allocate Message");
+        return NULL;
+    }
+
+    clone->command = origin->command;
+    clone->size = origin->size;
+    clone->position = origin->position;
+
+    clone->buffer = malloc(clone->size);
+    if (!clone->buffer) {
+        log_message(ERROR, "message_clone: failed to allocate buffer");
+        free(clone);
+        return NULL;
+    }
+
+    memcpy(clone->buffer, origin->buffer, clone->size);
+
+    return clone;
+}

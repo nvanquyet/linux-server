@@ -25,6 +25,7 @@ extern "C"
     bool message_read(Message *msg, void *out, size_t length);
     unsigned char *message_get_data(Message *msg, size_t *length);
     void message_reset_read_position(Message *msg);
+    Message* message_clone(Message *origin);
 
     bool message_write_byte(Message *msg, uint8_t value);
     bool message_write_bool(Message *msg, bool value);
