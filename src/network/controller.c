@@ -555,50 +555,61 @@ void server_receive_group_message(Session* session, Message* msg) {
     if (!manager || !session || !msg) {
         return;
     }
+
     msg->position = 0;
     int sender_id = (int) message_read_int(msg);
     int group_id = (int) message_read_int(msg);
     char content[1024];
     char sender_name[1024];
+
     Group *group = get_group_by_id(group_id);
-    if (!group || group->name == NULL)
-    {
+    if (!group || group->name == NULL) {
         log_message(ERROR, "Group with ID %d not found", group_id);
-        message_write_bool(msg, false);
-        message_write_string(msg, "Group not found");
+        Message* response = message_create(GROUP_MESSAGE);
+        if (!response) return;
+        message_write_bool(response, false);
+        message_write_string(response, "Group not found");
+        session_send_message(session, response);
+        return;
     }
+
     if (!message_read_string(msg, sender_name, sizeof(sender_name))) {
-        log_message(ERROR, "Failed to read data");
+        log_message(ERROR, "Failed to read sender name");
         return;
     }
     if (!message_read_string(msg, content, sizeof(content))) {
-        log_message(ERROR, "Failed to read data");
+        log_message(ERROR, "Failed to read message content");
         return;
     }
+
     bool is_member = check_member_exists(group_id, sender_id);
-    log_message(INFO, "User %d is member of group %d %s", group_id, sender_id, group->name);
+    log_message(INFO, "User %d is member of group %d %s", sender_id, group_id, group->name);
+
     if (is_member) {
         save_group_message(sender_id, group_id, content);
-        Message *respone = message_create(GROUP_MESSAGE);
-        if (respone == NULL) {
+        Message *response = message_create(GROUP_MESSAGE);
+        if (!response) {
             log_message(ERROR, "Failed to create message");
             return;
         }
-        message_write_bool(respone, true);
-        message_write_int(respone, sender_id);
-        message_write_int(respone, group_id);
-        message_write_string(respone, group->name);
-        message_write_string(respone, sender_name);
-        message_write_string(respone, content);
-        broad_cast_to_group(group_id, respone);
+        message_write_bool(response, true);
+        message_write_int(response, sender_id);
+        message_write_int(response, group_id);
+        message_write_string(response, group->name);
+        message_write_string(response, sender_name);
+        message_write_string(response, content);
+        broad_cast_to_group(group_id, response);
         return;
     }
-    msg = message_create(GROUP_MESSAGE);
-    msg->position = 0;
-    message_write_bool(msg, false);
-    message_write_string(msg, "You arent not member of group");
-    session_send_message(session, msg);
+
+    // Not a member
+    Message* response = message_create(GROUP_MESSAGE);
+    if (!response) return;
+    message_write_bool(response, false);
+    message_write_string(response, "You aren't a member of the group");
+    session_send_message(session, response);
 }
+
 void get_chat_history(Session* session, Message* msg) {
     ServerManager *manager = server_manager_get_instance();
     if (manager == NULL || session == NULL || msg == NULL) return;
