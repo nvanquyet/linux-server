@@ -584,6 +584,7 @@ void server_receive_group_message(Session* session, Message* msg) {
             log_message(ERROR, "Failed to create message");
             return;
         }
+        message_write_bool(msg, true);
         message_write_int(msg, sender_id);
         message_write_int(msg, group_id);
         message_write_string(msg, group->name);
