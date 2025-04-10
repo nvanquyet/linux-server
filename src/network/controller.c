@@ -329,7 +329,7 @@ void server_create_group(Session* session, Message* msg) {
         message_write_string(res, "Invalid group name or password");
         session_send_message(session, res);
         return;
-        }
+    }
 
     User* user = findUserById(user_id);
     Message* res = message_create(CREATE_GROUP);

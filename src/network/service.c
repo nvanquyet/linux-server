@@ -71,7 +71,7 @@ void service_server_message(Session* session, char *content) {
 
     message_write_string(msg, content);
     session_send_message(session, msg);
-    log_message(DEBUG, "Server message sent: %s", content);
+    log_message(LOG_DEBUG, "Server message sent: %s", content);
 }
 void broadcast_message(int user_id[], int num_users, Message *msg) {
     for (int i = 0; i < num_users; i++) {

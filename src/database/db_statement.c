@@ -111,7 +111,7 @@ bool db_bind_string(DbStatement *stmt, int index, const char *value)
         }
 
         stmt->param_count = current_param_count;
-        log_message(DEBUG, "Statement has %lu parameters", stmt->param_count);
+        log_message(LOG_DEBUG, "Statement has %lu parameters", stmt->param_count);
 
         if (stmt->param_count == 0)
         {
@@ -153,7 +153,7 @@ bool db_bind_string(DbStatement *stmt, int index, const char *value)
     stmt->binds[index].length = &stmt->lengths[index];
     stmt->binds[index].is_null = 0;
 
-    log_message(DEBUG, "Successfully bound string value: %s (length: %lu) at index %d",
+    log_message(LOG_DEBUG, "Successfully bound string value: %s (length: %lu) at index %d",
                 value, stmt->lengths[index], index);
     return true;
 }
@@ -247,11 +247,11 @@ DbResultSet *db_execute_query(DbStatement *stmt)
         return NULL;
     }
 
-    log_message(DEBUG, "Executing prepared query");
+    log_message(LOG_DEBUG, "Executing prepared query");
 
     if (stmt->binds && !stmt->is_bound)
     {
-        log_message(DEBUG, "Binding parameters to statement");
+        log_message(LOG_DEBUG, "Binding parameters to statement");
         if (mysql_stmt_bind_param(stmt->stmt, stmt->binds) != 0)
         {
             log_message(ERROR, "Failed to bind parameters: %s",
@@ -259,7 +259,7 @@ DbResultSet *db_execute_query(DbStatement *stmt)
             goto cleanup_no_result;
         }
         stmt->is_bound = true;
-        log_message(DEBUG, "Parameters bound successfully");
+        log_message(LOG_DEBUG, "Parameters bound successfully");
     }
 
     if (mysql_stmt_execute(stmt->stmt) != 0)
@@ -276,7 +276,7 @@ DbResultSet *db_execute_query(DbStatement *stmt)
                     mysql_stmt_error(stmt->stmt));
         goto cleanup_no_result;
     }
-    log_message(DEBUG, "Got result metadata");
+    log_message(LOG_DEBUG, "Got result metadata");
 
     if (mysql_stmt_store_result(stmt->stmt) != 0)
     {
@@ -285,7 +285,7 @@ DbResultSet *db_execute_query(DbStatement *stmt)
         mysql_free_result(meta);
         goto cleanup_no_result;
     }
-    log_message(DEBUG, "Stored result");
+    log_message(LOG_DEBUG, "Stored result");
 
     unsigned int num_fields = mysql_num_fields(meta);
     MYSQL_FIELD *fields = mysql_fetch_fields(meta);
@@ -449,7 +449,7 @@ DbResultSet *db_execute_query(DbStatement *stmt)
                 field->key = strdup(fields[i].name);
                 field->type = fields[i].type;
 
-                log_message(DEBUG, "Field %d: %s = %s",
+                log_message(LOG_DEBUG, "Field %d: %s = %s",
                             i, field->key, string_buffers[i]);
 
                 switch (fields[i].type)
@@ -677,7 +677,7 @@ bool db_bind_int(DbStatement *stmt, int index, int value) {
 
     stmt->binds[index].is_null = 0;
 
-    log_message(DEBUG, "Successfully bound int value %d at index %d", value, index);
+    log_message(LOG_DEBUG, "Successfully bound int value %d at index %d", value, index);
     return true;
 }
 
@@ -742,7 +742,7 @@ bool db_bind_long(DbStatement *stmt, int index, long value) {
 
     stmt->binds[index].is_null = 0;
 
-    log_message(DEBUG, "Successfully bound long value %ld at index %d", value, index);
+    log_message(LOG_DEBUG, "Successfully bound long value %ld at index %d", value, index);
     return true;
 }
 int db_get_insert_id(DbStatement *stmt) {
