@@ -81,7 +81,6 @@ void broadcast_message(int user_id[], int num_users, Message *msg) {
             session_send_message(user->session, msg);
         }
     }
-    free(msg);
 }
 
 void direct_message(int user_id, Message* msg) {
