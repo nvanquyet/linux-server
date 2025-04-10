@@ -66,7 +66,7 @@
 "ORDER BY m.timestamp ASC"
 
 #define SQL_GET_MESSAGES_WITH_GROUP \
-"SELECT m.sender_id, u.username AS sender_name, m.message_content, m.m.timestamp / 1000000 " \
+"SELECT m.sender_id, u.username AS sender_name, m.message_content, m.timestamp / 1000000 " \
 "FROM messages m " \
 "JOIN users u ON m.sender_id = u.id " \
 "WHERE m.group_id = ? " \
