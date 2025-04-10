@@ -12,11 +12,11 @@
 
 #include "group.h"
 #include "group_member.h"
-
 ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
     DbStatement* stmt = db_prepare(SQL_GET_CHAT_HISTORIES_BY_USER);
     if (!stmt) {
         log_message(ERROR, "Failed to prepare chat history statement");
+        *out_count = 0;
         return NULL;
     }
 
@@ -29,22 +29,73 @@ ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
 
     DbResultSet* result = db_execute_query(stmt);
     db_statement_free(stmt);
+
     if (!result || result->row_count == 0) {
         *out_count = 0;
-        db_result_set_free(result);
+        if (result) db_result_set_free(result);
         return NULL;
     }
 
-    // Cấp phát bộ nhớ cho lịch sử trò chuyện
-    ChatHistory* histories = (ChatHistory*)malloc(sizeof(ChatHistory) * result->row_count);
-    if (!histories) {
-        db_result_set_free(result);
-        return NULL;
-    }
-
+    // First pass to count actual valid entries
+    int valid_count = 0;
     for (int i = 0; i < result->row_count; i++) {
         DbResultRow* row = result->rows[i];
-        ChatHistory* history = &histories[i];
+        for (int j = 0; j < row->field_count; j++) {
+            DbResultField* field = row->fields[j];
+            if (!field) continue;
+            if (strcmp(field->key, "chat_id") == 0) {
+                int chat_id = *(int*)field->value;
+                if (chat_id < 0) {
+                    // This is a group chat, check if user is still a member
+                    bool is_member = check_member_exists(-chat_id, user_id);
+                    if (is_member) {
+                        valid_count++;
+                    }
+                } else {
+                    // This is a direct message, always valid
+                    valid_count++;
+                }
+                break;
+            }
+        }
+    }
+
+    // Cấp phát bộ nhớ cho lịch sử trò chuyện (only for valid entries)
+    ChatHistory* histories = (ChatHistory*)malloc(sizeof(ChatHistory) * valid_count);
+    if (!histories) {
+        db_result_set_free(result);
+        *out_count = 0;
+        return NULL;
+    }
+
+    // Second pass to fill the array
+    int valid_index = 0;
+    for (int i = 0; i < result->row_count; i++) {
+        DbResultRow* row = result->rows[i];
+        bool skip_entry = false;
+        int chat_id = 0;
+
+        // First get the chat_id to check membership
+        for (int j = 0; j < row->field_count; j++) {
+            DbResultField* field = row->fields[j];
+            if (!field) continue;
+            if (strcmp(field->key, "chat_id") == 0) {
+                chat_id = *(int*)field->value;
+                if (chat_id < 0) {
+                    // Check if user is still a member
+                    bool is_member = check_member_exists(-chat_id, user_id);
+                    if (!is_member) {
+                        skip_entry = true;
+                    }
+                }
+                break;
+            }
+        }
+
+        if (skip_entry) continue;
+
+        // Now fill in the data
+        ChatHistory* history = &histories[valid_index];
         memset(history, 0, sizeof(ChatHistory));
 
         for (int j = 0; j < row->field_count; j++) {
@@ -52,45 +103,44 @@ ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
             if (!field) continue;
 
             if (strcmp(field->key, "chat_id") == 0) {
-                history->id = *(int*)field->value;
-
-                // Format `chat_with` = "4" (user) hoặc "G5" (group)
+                history->id = chat_id;
+                // Format chat_with information
                 if (history->id < 0) {
-                    bool is_member = check_member_exists(-history->id, user_id);
-                    if (!is_member)
-                    {
-                        continue;
-                    }
                     Group* g = get_group_by_id(-history->id);
-                    snprintf(history->chat_with, sizeof(history->chat_with), g->name);
-                    free(g);
-                } else {
-                    if (history->id != user_id) {
-                        User* u = findUserById(history->id);
+                    if (g) {
+                        snprintf(history->chat_with, sizeof(history->chat_with), "%s", g->name);
+                        free(g);
+                    } else {
+                        snprintf(history->chat_with, sizeof(history->chat_with), "Unknown Group");
+                    }
+                } else if (history->id != user_id) {
+                    User* u = findUserById(history->id);
+                    if (u) {
                         snprintf(history->chat_with, sizeof(history->chat_with), "%s", u->username);
                         free(u);
+                    } else {
+                        snprintf(history->chat_with, sizeof(history->chat_with), "Unknown User");
                     }
-
                 }
             } else if (strcmp(field->key, "last_message") == 0) {
-                // Kiểm tra kích thước để tránh lỗi tràn bộ nhớ
                 strncpy(history->last_message, (char*)field->value, sizeof(history->last_message) - 1);
+                history->last_message[sizeof(history->last_message) - 1] = '\0'; // Ensure null termination
             } else if (strcmp(field->key, "last_time") == 0) {
                 history->last_time = *(long*)field->value;
             } else if (strcmp(field->key, "sender_name") == 0) {
-                // Thêm tên người gửi
                 strncpy(history->sender_name, (char*)field->value, sizeof(history->sender_name) - 1);
+                history->sender_name[sizeof(history->sender_name) - 1] = '\0'; // Ensure null termination
             }
         }
+
+        valid_index++;
     }
 
-    *out_count = result->row_count;
+    *out_count = valid_count;
     db_result_set_free(result);
 
-    // Trả về kết quả
     return histories;
 }
-
 
 void save_private_message(int sender_id, int receiver_id, const char* content) {
     DbStatement* stmt = db_prepare(SQL_INSERT_PRIVATE_MESSAGE);
