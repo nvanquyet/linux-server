@@ -218,7 +218,7 @@ MessageData* get_chat_messages(int user_id, int chat_with_id, int group_id, int*
             }
         }
     }
-
+    log_message(INFO, "Load history success");
     *count = result->row_count;
     db_result_set_free(result);
     return messages;
