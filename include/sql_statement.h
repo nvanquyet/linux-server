@@ -42,9 +42,10 @@
 "    END AS chat_id, " \
 "    MAX(timestamp) AS last_time " \
 "  FROM messages " \
-"  WHERE sender_id = ? " \
+"  WHERE (sender_id = ? " \
 "     OR receiver_id = ? " \
-"     OR group_id IN (SELECT group_id FROM group_members WHERE user_id = ?) " \
+"     OR group_id IN (SELECT group_id FROM group_members WHERE user_id = ? AND is_active = 1)) " \
+"     AND (group_id IS NULL OR group_id IN (SELECT group_id FROM group_members WHERE user_id = ? AND is_active = 1)) " \
 "  GROUP BY chat_id " \
 ") sub " \
 "JOIN messages m ON ( " \
@@ -56,6 +57,7 @@
 ") " \
 "LEFT JOIN users u ON u.id = m.sender_id " \
 "ORDER BY sub.last_time DESC"
+
 #define SQL_GET_MESSAGES_WITH_USER \
 "SELECT m.sender_id, u.username AS sender_name, m.message_content, UNIX_TIMESTAMP(m.timestamp) AS timestamp " \
 "FROM messages m " \
