@@ -214,7 +214,6 @@ MessageData* get_chat_messages(int user_id, int chat_with_id, int group_id, int*
                 m->content = strdup((char*)field->value);
             } else if (strcmp(field->key, "timestamp") == 0) {
                 m->timestamp = *(long*)field->value;
-                log_message(INFO, "Received message with timestamp %ld", m->timestamp);
             }
         }
     }
