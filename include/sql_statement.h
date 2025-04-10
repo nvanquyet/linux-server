@@ -58,7 +58,7 @@
 "ORDER BY sub.last_time DESC"
 
 #define SQL_GET_MESSAGES_WITH_USER \
-"SELECT m.sender_id, u.username AS sender_name, m.message_content, UNIX_TIMESTAMP(m.timestamp) AS timestamp \
+"SELECT m.sender_id, u.username AS sender_name, m.message_content, FROM_UNIXTIME(m.timestamp) AS timestamp \
 FROM messages m \
 JOIN users u ON m.sender_id = u.id \
 WHERE ((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?)) \
@@ -66,11 +66,12 @@ AND m.group_id IS NULL \
 ORDER BY m.timestamp ASC"
 
 #define SQL_GET_MESSAGES_WITH_GROUP \
-"SELECT m.sender_id, u.username AS sender_name, m.message_content, UNIX_TIMESTAMP(m.timestamp) AS timestamp \
-FROM messages m \
-JOIN users u ON m.sender_id = u.id \
-WHERE m.group_id = ? \
-ORDER BY m.timestamp ASC"
+"SELECT m.sender_id, u.username AS sender_name, m.message_content, FROM_UNIXTIME(m.timestamp) AS timestamp " \
+"FROM messages m " \
+"JOIN users u ON m.sender_id = u.id " \
+"WHERE m.group_id = ? " \
+"ORDER BY m.timestamp ASC"
+
 
 // Gửi tin nhắn riêng
 #define SQL_INSERT_PRIVATE_MESSAGE \

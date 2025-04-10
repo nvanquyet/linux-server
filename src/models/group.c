@@ -141,7 +141,7 @@ Group *get_group_by_id(int group_id) {
 
     // Bind ID của nhóm vào câu lệnh SQL
     if (!db_bind_int(stmt, 0, group_id)) {
-        log_message(ERROR, "Failed to bind group ID");
+        log_message(ERROR, "Failed to bind group 2ID");
         db_statement_free(stmt);
         return NULL;
     }
@@ -273,7 +273,7 @@ Group *get_group(Group *self, char *errorMsg, size_t errorSize) {
     return NULL;
 }
 
-void broad_cast_group_noti(int group_id, Message *msg) {
+void broad_cast_to_group(int group_id, Message *msg) {
     int count = 0;
     int* member_ids = get_group_members(group_id, &count);
 

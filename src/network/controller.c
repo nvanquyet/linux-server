@@ -308,181 +308,207 @@ void get_joined_groups(Session* session, Message* msg){
 }
 
 void server_create_group(Session* session, Message* msg) {
-    ServerManager *manager = server_manager_get_instance();
-    if (!manager || !session || !msg) {
-        return;
-    }
+    if (!server_manager_get_instance() || !session || !msg) return;
 
     msg->position = 0;
-    char group_name[256] = {0};
-    char group_password[256] = {0};
-    int user_id = (int) message_read_int(msg);
-    char error_message[256] = {0};
 
-    Message *message = message_create(CREATE_GROUP);
-    if (!message) {
-        log_message(ERROR, "Failed to create response message");
-        return;
-    }
+    int user_id = message_read_int(msg);
+    char group_name[256] = {0}, group_password[256] = {0}, error[256] = {0};
 
     if (!message_read_string(msg, group_name, sizeof(group_name)) ||
         !message_read_string(msg, group_password, sizeof(group_password))) {
-
-        log_message(ERROR, "Failed to read group name or password from message");
-        message_write_bool(message, false);
-        message_write_string(message, "Invalid group name or password");
-        session_send_message(session, message);
+        Message* res = message_create(CREATE_GROUP);
+        message_write_bool(res, false);
+        message_write_string(res, "Invalid group name or password");
+        session_send_message(session, res);
         return;
         }
 
     User* user = findUserById(user_id);
+    Message* res = message_create(CREATE_GROUP);
 
     if (!user) {
-        log_message(ERROR, "User not found with ID: %d", user_id);
-        message_write_bool(message, false);
-        message_write_string(message, "User not found");
-        session_send_message(session, message);
+        message_write_bool(res, false);
+        message_write_string(res, "User not found");
+        session_send_message(session, res);
         return;
     }
 
-    Group* newGroup = create_group(group_name, group_password, user, error_message);
-    if (!newGroup) {
-        log_message(ERROR, "Group creation failed: %s", error_message);
-        message_write_bool(message, false);
-        message_write_string(message, error_message);
+    Group* group = create_group(group_name, group_password, user, error);
+
+    if (!group) {
+        message_write_bool(res, false);
+        message_write_string(res, error);
     } else {
-        message_write_bool(message, true);
-        message_write_int(message, newGroup->id);
-        message_write_string(message, newGroup->name);
-        // Optional: free newGroup if not needed
-        //save to db
-    }
-    free(newGroup);
-    session_send_message(session, message);
-}
-void server_handle_join_group(Session* session, Message* msg) {
-    ServerManager *manager = server_manager_get_instance();
-    if (!manager || !session || !msg) {
-        return;
+        message_write_bool(res, true);
+        message_write_int(res, group->id);
+        message_write_int(res, user->id);
+        message_write_string(res, group->name);
+        message_write_string(res, user->username);
+
+        char noti[256];
+        snprintf(noti, sizeof(noti), "Group created by %s", user->username);
+        message_write_string(res, noti);
+        save_group_message(user_id, group->id, noti);
+        free(group); // Optional
     }
 
-    Message *message = message_create(JOIN_GROUP);
-    if (!message) {
-        log_message(ERROR, "Failed to create response message");
-        return;
-    }
+    session_send_message(session, res);
+}
+
+void server_handle_join_group(Session* session, Message* msg) {
+    if (!server_manager_get_instance() || !session || !msg) return;
 
     msg->position = 0;
 
-    char group_name[256] = {0};
-    char group_password[256] = {0};
-    int user_id = (int) message_read_int(msg);
+    int user_id = message_read_int(msg);
+    char group_name[256] = {0}, group_password[256] = {0}, user_name[256] = {0}, error[256] = {0};
 
     if (!message_read_string(msg, group_name, sizeof(group_name)) ||
-        !message_read_string(msg, group_password, sizeof(group_password))) {
-        log_message(ERROR, "Failed to read group name or password");
-        message_write_bool(message, false);
-        message_write_string(message, "Invalid group name or password");
-        session_send_message(session, message);
+        !message_read_string(msg, group_password, sizeof(group_password)) ||
+        !message_read_string(msg, user_name, sizeof(user_name))) {
+        Message* res = message_create(JOIN_GROUP);
+        message_write_bool(res, false);
+        message_write_string(res, "Invalid group name or password");
+        session_send_message(session, res);
         return;
-    }
+        }
 
-    char error_message[256] = {0};
+    Group* temp = create_new_group(group_name, group_password);
+    Group* group = get_group(temp, error, sizeof(error));
 
-    Group *group = create_new_group(group_name, group_password);
-    group = get_group(group, error_message, sizeof(error_message));
-    //free(group_search);
+    Message* res = message_create(JOIN_GROUP);
+
     if (!group) {
-        log_message(ERROR, "Group '%s' not found", group_name);
-        message_write_bool(message, false);
-        message_write_string(message, "Group not found");
-        session_send_message(session, message);
+        message_write_bool(res, false);
+        message_write_string(res, "Group not found");
+        session_send_message(session, res);
         return;
     }
 
-    bool joined = add_group_member(group->id, user_id, error_message);
-    message_write_bool(message, joined);
+    bool joined = add_group_member(group->id, user_id, error);
+    message_write_bool(res, joined);
 
     if (!joined) {
-        message_write_string(message, error_message);
+        message_write_string(res, error);
     } else {
-        message_write_int(message, group->id);
-        message_write_string(message, group->name);
-        //last-message
-        message_write_string(message, "Group joined successfully");
-        // Gửi thông báo đến các thành viên trong nhóm
-        User *user = findUserById(user_id);
+        User* user = findUserById(user_id);
         if (user) {
-            Message *noti = message_create(GROUP_NOTIFICATION);
-            message_write_int(noti, group->id);
-            message_write_int(noti, user->id);
-            message_write_string(noti, user->username);
-            message_write_string(noti, " has joined the group: ");
-            message_write_string(noti, group->name);
-            broad_cast_group_noti(group->id, noti);
+            message_write_int(res, group->id);
+            message_write_int(res, user->id);
+            message_write_string(res, group->name);
+            message_write_string(res, user->username);
+
+            char noti[256];
+            snprintf(noti, sizeof(noti), "%s joined group", user_name);
+            message_write_string(res, noti);
+            save_group_message(user_id, group->id, noti);
+            broad_cast_to_group(group->id, res);
         }
     }
 
-    session_send_message(session, message);
+    session_send_message(session, res);
 }
-void server_handle_leave_group(Session* session, Message* msg) {
-    ServerManager *manager = server_manager_get_instance();
-    if (!manager || !session || !msg) {
-        return;
-    }
 
-    Message *message = message_create(LEAVE_GROUP);
-    if (!message) {
-        log_message(ERROR, "Failed to create message");
-        return;
-    }
+void server_handle_leave_group(Session* session, Message* msg) {
+    if (!server_manager_get_instance() || !session || !msg) return;
 
     msg->position = 0;
-    int group_id = (int) message_read_int(msg);
-    int user_id = (int) message_read_int(msg);
-    char error_message[256] = {0};
+    int group_id = message_read_int(msg);
+    int user_id = message_read_int(msg);
+    char error[256] = {0};
 
-    Group *group = get_group_by_id(group_id);
+    Message* res = message_create(LEAVE_GROUP);
+    Group* group = get_group_by_id(group_id);
+
     if (!group) {
-        log_message(ERROR, "Group ID %d not found", group_id);
-        message_write_bool(message, false);
-        message_write_string(message, "Group not found");
-        session_send_message(session, message);
+        message_write_bool(res, false);
+        message_write_string(res, "Group not found");
+        session_send_message(session, res);
         return;
     }
 
     if (group->created_by && group->created_by->id == user_id) {
-        message_write_bool(message, false);
-        message_write_string(message, "You are the creator and cannot leave the group");
-        log_message(INFO, "Creator (User %d) attempted to leave group %d", user_id, group_id);
-        session_send_message(session, message);
+        message_write_bool(res, false);
+        message_write_string(res, "You are the creator and cannot leave the group");
+        session_send_message(session, res);
         return;
     }
 
-    bool result = remove_group_member(group_id, user_id, error_message);
-    message_write_bool(message, result);
-    if (!result) {
-        message_write_string(message, error_message);
-        log_message(WARN, "User %d failed to leave group %d: %s", user_id, group_id, error_message);
-    } else {
-        message_write_int(message, group->id);
-        log_message(INFO, "User %d left group %d", user_id, group_id);
+    bool removed = remove_group_member(group_id, user_id, error);
+    message_write_bool(res, removed);
 
-        // Gửi thông báo đến các thành viên khác trong nhóm
-        User *user = findUserById(user_id);
+    if (!removed) {
+        message_write_string(res, error);
+    } else {
+        User* user = findUserById(user_id);
         if (user) {
-            Message *noti = message_create(GROUP_NOTIFICATION);
-            message_write_int(noti, group->id);
-            message_write_int(noti, user->id);
-            message_write_string(noti, user->username);
-            message_write_string(noti, " has left the group.");
-            message_write_string(noti, group->name);
-            broad_cast_group_noti(group_id, noti);
+            message_write_int(res, group->id);
+            message_write_int(res, user->id);
+            message_write_string(res, group->name);
+            message_write_string(res, user->username);
+
+            char noti[256];
+            snprintf(noti, sizeof(noti), "%s left group", user->username);
+            message_write_string(res, noti);
+
+            save_group_message(user_id, group->id, noti);
+            broad_cast_to_group(group_id, res);
         }
     }
 
-    session_send_message(session, message);
+    session_send_message(session, res);
 }
+
+void server_delete_group(Session* session, Message* msg) {
+    if (!server_manager_get_instance() || !session || !msg) return;
+
+    msg->position = 0;
+    int group_id = message_read_int(msg);
+    int user_id = message_read_int(msg);
+    char error[256] = {0};
+
+    Message* res = message_create(DELETE_GROUP);
+    Group* group = get_group_by_id(group_id);
+
+    if (!group) {
+        message_write_bool(res, false);
+        message_write_string(res, "Group not found");
+        session_send_message(session, res);
+        return;
+    }
+
+    if (!group->created_by || group->created_by->id != user_id) {
+        message_write_bool(res, false);
+        message_write_string(res, "You are not the creator and cannot delete this group");
+        session_send_message(session, res);
+        return;
+    }
+
+    User* user = findUserById(user_id);
+    if (!user) {
+        message_write_bool(res, false);
+        message_write_string(res, "User not found");
+        session_send_message(session, res);
+        return;
+    }
+
+    bool deleted = delete_group(group, user, error);
+    message_write_bool(res, deleted);
+    if (!deleted)
+    {
+        message_write_string(res, error);
+    }else
+    {
+        message_write_int(res, group->id);
+        char noti[256];
+        snprintf(noti, sizeof(noti), "%s delete group %s", user->username, group->name);
+        message_write_string(res, noti);
+        broad_cast_to_group(group->id, res);
+    }
+    session_send_message(session, res);
+}
+
 void server_receive_message(Session* session, Message* msg) {
     ServerManager *manager = server_manager_get_instance();
     if (!manager || !session || !msg) {
@@ -515,63 +541,7 @@ void server_receive_message(Session* session, Message* msg) {
     message_write_string(msg, sender_name);
     message_write_string(msg, content);
     session->service->direct_message(receiver_id, msg);
-}
-void server_delete_group(Session* session, Message* msg) {
-    ServerManager *manager = server_manager_get_instance();
-    if (!manager || !session || !msg) {
-        return;
-    }
-
-    Message *message = message_create(DELETE_GROUP);
-    if (!message) {
-        log_message(ERROR, "Failed to create response message");
-        return;
-    }
-
-    msg->position = 0;
-
-    int group_id = (int) message_read_int(msg);
-    int user_id = (int) message_read_int(msg);
-
-    char error_message[256] = {0};
-
-    Group *group = get_group_by_id(group_id);
-    if (!group) {
-        log_message(ERROR, "Group with ID %d not found", group_id);
-        message_write_bool(message, false);
-        message_write_string(message, "Group not found");
-        session_send_message(session, message);
-        return;
-    }
-
-    if (!group->created_by || group->created_by->id != user_id) {
-        log_message(WARN, "User %d is not the creator of group %d", user_id, group_id);
-        message_write_bool(message, false);
-        message_write_string(message, "You are not the creator and cannot delete this group");
-        session_send_message(session, message);
-        return;
-    }
-
-    User *user = findUserById(user_id);
-    if (!user) {
-        log_message(ERROR, "User with ID %d not found", user_id);
-        message_write_bool(message, false);
-        message_write_string(message, "User not found");
-        session_send_message(session, message);
-        return;
-    }
-
-    bool deleted = delete_group(group, user, error_message);
-    if (deleted) {
-        message_write_bool(message, true);
-        message_write_string(message, "Group deleted successfully");
-    } else {
-        log_message(ERROR, "Group deletion failed: %s", error_message);
-        message_write_bool(message, false);
-        message_write_string(message, error_message[0] != '\0' ? error_message : "Failed to delete group");
-    }
-
-    session_send_message(session, message);
+    //session_send_message(session, msg);
 }
 void server_receive_group_message(Session* session, Message* msg) {
     ServerManager *manager = server_manager_get_instance();
@@ -613,14 +583,15 @@ void server_receive_group_message(Session* session, Message* msg) {
         message_write_string(msg, group->name);
         message_write_string(msg, sender_name);
         message_write_string(msg, content);
-        broad_cast_group_noti(group_id, msg);
-    } else {
-        Message* mess = message_create(GROUP_MESSAGE);
-        mess->position = 0;
-        message_write_bool(mess, false);
-        message_write_string(mess, "You arent not member of group");
-        session_send_message(session, mess);
+        broad_cast_to_group(group_id, msg);
+        return;
     }
+    msg = message_create(GROUP_MESSAGE);
+    msg->position = 0;
+    message_write_bool(msg, false);
+    message_write_string(msg, "You arent not member of group");
+    session_send_message(session, msg);
+
 }
 void get_chat_history(Session* session, Message* msg) {
     ServerManager *manager = server_manager_get_instance();

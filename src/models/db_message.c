@@ -55,7 +55,7 @@ ChatHistory* get_chat_histories_by_user(int user_id, int* out_count) {
 
                 // Format `chat_with` = "4" (user) hoặc "G5" (group)
                 if (history->id < 0) {
-                    Group* g = get_group_by_id(-histories->id);
+                    Group* g = get_group_by_id(-history->id);
                     snprintf(history->chat_with, sizeof(history->chat_with), g->name);
                     free(g);
                 } else {
